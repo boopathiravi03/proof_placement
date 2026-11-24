@@ -19,6 +19,11 @@ import {
   StudentPrivacyResponse,
   StudentDriveItem,
   ResumeDataResponse,
+  AdaptiveQuestionPayload,
+  StartAttemptResponse,
+  SubmitAnswerResponse,
+  AssessmentReportResponse,
+  RoleComparisonResponse,
 } from '@/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -212,12 +217,87 @@ class ApiClient {
     });
   }
 
-  // Assessments
-  async getAdaptiveQuestion(category = 'SQL', level = 2, excludeIds: string[] = []): Promise<Question | null> {
-    const excludeParam = excludeIds.length ? `&exclude=${excludeIds.join(',')}` : '';
-    return this.request(`/assessments/adaptive-question?category=${category}&level=${level}${excludeParam}`);
+  // Assessments & Adaptive Diagnostic Engine
+  async getAssessmentCategories(): Promise<string[] | null> {
+    return this.request('/assessments/categories');
   }
 
+  async startAssessment(payload: {
+    student_id: string;
+    category: string;
+    assessment_type?: string;
+    target_role?: string;
+    time_limit_minutes?: number;
+    total_questions?: number;
+  }): Promise<StartAttemptResponse | null> {
+    return this.request('/assessments/start', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getAdaptiveQuestion(category = 'DBMS', level = 2, excludeIds: string[] = []): Promise<AdaptiveQuestionPayload | null> {
+    const excludeParam = excludeIds.length ? `&exclude=${excludeIds.join(',')}` : '';
+    return this.request(`/assessments/adaptive-question?category=${encodeURIComponent(category)}&level=${level}${excludeParam}`);
+  }
+
+  async submitAssessmentAnswer(payload: {
+    attempt_id: string;
+    student_id: string;
+    question_id: string;
+    selected_option_index?: number | null;
+    code_submission?: string | null;
+    sql_query?: string | null;
+    explanation?: string | null;
+    time_spent_seconds?: number;
+  }): Promise<SubmitAnswerResponse | null> {
+    return this.request('/assessments/submit-answer', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async completeAssessmentAttempt(payload: {
+    attempt_id: string;
+    student_id: string;
+  }): Promise<AssessmentReportResponse | null> {
+    return this.request('/assessments/complete', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getAssessmentReport(attemptId: string, studentId = 'student-rahul-01'): Promise<AssessmentReportResponse | null> {
+    return this.request(`/assessments/report/${attemptId}?student_id=${studentId}`);
+  }
+
+  async getAssessmentIntelligence(studentId = 'student-rahul-01', category?: string): Promise<any | null> {
+    const catParam = category ? `?category=${encodeURIComponent(category)}` : '';
+    return this.request(`/assessments/intelligence/${studentId}${catParam}`);
+  }
+
+  async executeCodeInSandbox(payload: {
+    language: string;
+    code: string;
+    test_cases: Array<{ input: string; expected_output: string; is_hidden?: boolean }>;
+  }): Promise<{ status: string; score: number; passed_count: number; total_count: number; test_results?: any[]; error?: string; execution_time_ms: number } | null> {
+    return this.request('/assessments/execute-code', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async executeSqlInSandbox(payload: {
+    query: string;
+    expected_output?: string;
+  }): Promise<{ status: string; score: number; columns: string[]; rows: any[][]; error?: string; execution_time_ms: number } | null> {
+    return this.request('/assessments/execute-sql', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Legacy assessment compatibility helper
   async submitAnswer(payload: {
     student_id: string;
     category: string;
@@ -237,9 +317,13 @@ class ApiClient {
     });
   }
 
-  // Readiness
-  async getReadiness(studentId = 'student-rahul-01', role = 'Backend'): Promise<ReadinessScore | null> {
+  // Placement Readiness Index & Role Comparison
+  async getReadiness(studentId = 'student-rahul-01', role = 'Backend Developer'): Promise<ReadinessScore | null> {
     return this.request(`/readiness/student/${studentId}?role=${encodeURIComponent(role)}`);
+  }
+
+  async compareTargetRoles(studentId = 'student-rahul-01'): Promise<RoleComparisonResponse | null> {
+    return this.request(`/readiness/student/${studentId}/compare`);
   }
 
   // Learning Paths

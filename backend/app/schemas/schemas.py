@@ -64,9 +64,16 @@ class StudentProfileResponse(BaseModel):
 class QuestionDTO(BaseModel):
     id: str
     category: str
+    topic: Optional[str] = "General"
+    question_type: Optional[str] = "mcq"
     question: str
     options: List[str]
     difficulty_level: int
+    difficulty_str: Optional[str] = "Intermediate"
+    starter_code: Optional[str] = None
+    test_cases: Optional[List[Dict[str, Any]]] = None
+    marks: Optional[int] = 1
+    time_limit_sec: Optional[int] = 120
     explanation: Optional[str] = None
 
 class AnswerSubmission(BaseModel):
@@ -75,6 +82,37 @@ class AnswerSubmission(BaseModel):
     question_id: str
     selected_option_index: int
     current_difficulty: int
+
+class StartAssessmentRequest(BaseModel):
+    student_id: str
+    category: str = "DBMS"
+    assessment_type: str = "mcq"  # aptitude, programming, sql, mcq, debugging, interview
+    target_role: Optional[str] = "Backend Developer"
+    time_limit_minutes: int = 20
+    total_questions: int = 5
+
+class SubmitAnswerRequest(BaseModel):
+    attempt_id: str
+    student_id: str
+    question_id: str
+    selected_option_index: Optional[int] = None
+    code_submission: Optional[str] = None
+    sql_query: Optional[str] = None
+    explanation: Optional[str] = None
+    time_spent_seconds: int = 30
+
+class CompleteAssessmentRequest(BaseModel):
+    attempt_id: str
+    student_id: str
+
+class ExecuteCodeRequest(BaseModel):
+    language: str = "python"
+    code: str
+    test_cases: List[Dict[str, Any]] = []
+
+class ExecuteSqlRequest(BaseModel):
+    query: str
+    expected_output: Optional[str] = None
 
 class AssessmentResultResponse(BaseModel):
     passed: bool

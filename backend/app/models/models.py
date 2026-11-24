@@ -201,11 +201,20 @@ class QuestionBank(Base):
     __tablename__ = "question_bank"
     
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    category = Column(String(50), nullable=False)  # SQL, Python, Git, DSA, Aptitude
+    category = Column(String(50), nullable=False)  # Aptitude, Programming, DSA, DBMS, OS, Networks, Web, Tools, Debugging, Interview
+    topic = Column(String(100), default="General", nullable=False)
+    question_type = Column(String(50), default="mcq", nullable=False)  # mcq, coding, sql, debugging, interview
+    difficulty_str = Column(String(50), default="Intermediate", nullable=False)  # Beginner, Intermediate, Advanced
     question = Column(Text, nullable=False)
     options = Column(JSON, nullable=False)
     correct_option_index = Column(Integer, nullable=False)
     difficulty_level = Column(Integer, nullable=False, default=1)  # 1, 2, 3
+    expected_answer = Column(Text, nullable=True)
+    test_cases = Column(JSON, default=list)
+    starter_code = Column(Text, nullable=True)
+    evaluation_criteria = Column(JSON, default=dict)
+    marks = Column(Integer, default=1)
+    time_limit_sec = Column(Integer, default=120)
     explanation = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -216,9 +225,20 @@ class AssessmentAttempt(Base):
     college_id = Column(String(36), nullable=False)
     student_id = Column(String(36), nullable=False)
     category = Column(String(50), nullable=False)
+    assessment_type = Column(String(50), default="mcq")  # aptitude, programming, sql, mcq, debugging, interview, comprehensive
+    target_role = Column(String(100), nullable=True)
     score = Column(Integer, default=0)
     total_questions = Column(Integer, default=5)
     passed = Column(Boolean, default=False)
+    time_spent_seconds = Column(Integer, default=0)
+    status = Column(String(50), default="completed")  # in_progress, completed, expired
+    expires_at = Column(DateTime, nullable=True)
+    topic_scores = Column(JSON, default=dict)
+    difficulty_scores = Column(JSON, default=dict)
+    responses = Column(JSON, default=list)
+    weak_topics = Column(JSON, default=list)
+    strong_topics = Column(JSON, default=list)
+    recommendations = Column(JSON, default=list)
     history = Column(JSON, default=list)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -334,3 +354,34 @@ class GitHubRepository(Base):
     stars = Column(Integer, default=0)
     is_authorized = Column(Boolean, default=True)
     last_scanned_at = Column(DateTime, default=datetime.utcnow)
+
+class ReadinessSnapshot(Base):
+    __tablename__ = "readiness_snapshots"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    student_id = Column(String(36), ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    college_id = Column(String(36), nullable=False)
+    target_role = Column(String(100), nullable=False)
+    overall_score = Column(Integer, nullable=False)
+    confidence_level = Column(String(50), default="medium")
+    technical_score = Column(Float, default=0.0)
+    coding_score = Column(Float, default=0.0)
+    aptitude_score = Column(Float, default=0.0)
+    interview_score = Column(Float, default=0.0)
+    skill_coverage_score = Column(Float, default=0.0)
+    breakdown_json = Column(JSON, default=dict)
+    missing_skills = Column(JSON, default=list)
+    verified_skills = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class RoleRequirementConfig(Base):
+    __tablename__ = "role_requirements"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    role_name = Column(String(100), unique=True, nullable=False)
+    required_skills = Column(JSON, default=list)
+    min_cgpa = Column(Float, default=6.5)
+    max_backlogs = Column(Integer, default=0)
+    assessment_weights = Column(JSON, default=dict)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

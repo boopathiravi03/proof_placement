@@ -36,7 +36,8 @@ class TestAPIRoutersDirect(unittest.TestCase):
     def test_adaptive_question_router(self):
         q = get_next_adaptive_question(category="SQL", level=2, exclude=None, db=self.db)
         self.assertIsNotNone(q)
-        self.assertEqual(q.category, "SQL")
+        cat = q.category if hasattr(q, "category") else q["category"]
+        self.assertEqual(cat, "SQL")
 
     def test_readiness_router(self):
         res = get_student_readiness("student-rahul-01", role="Backend", db=self.db)

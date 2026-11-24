@@ -65,11 +65,114 @@ export interface ReadinessScore {
 export interface Question {
   id: string;
   category: string;
+  topic?: string;
+  question_type?: 'mcq' | 'coding' | 'sql' | 'debugging' | 'interview' | string;
   question: string;
   options: string[];
-  correct_option_index: number;
+  correct_option_index?: number;
   difficulty_level: number;
+  difficulty_str?: string;
+  starter_code?: string;
+  test_cases?: Array<{ input: string; expected_output: string; is_hidden: boolean }>;
+  marks?: number;
+  time_limit_sec?: number;
   explanation?: string;
+}
+
+export interface AdaptiveQuestionPayload {
+  id: string;
+  category: string;
+  topic: string;
+  question_type: string;
+  difficulty_level: number;
+  difficulty_str: string;
+  question: string;
+  options: string[];
+  starter_code?: string;
+  test_cases?: Array<{ input: string; expected_output: string; is_hidden: boolean }>;
+  marks: number;
+  time_limit_sec: number;
+}
+
+export interface StartAttemptResponse {
+  attempt_id: string;
+  category: string;
+  assessment_type: string;
+  target_role?: string;
+  total_questions: number;
+  time_limit_minutes: number;
+  expires_at: string;
+  first_question?: AdaptiveQuestionPayload;
+}
+
+export interface SubmitAnswerResponse {
+  is_correct: boolean;
+  marks_awarded: number;
+  current_difficulty: number;
+  next_difficulty: number;
+  feedback: string;
+  answered_count: number;
+  total_questions: number;
+  is_complete: boolean;
+  next_question?: AdaptiveQuestionPayload;
+  evaluation_detail?: Record<string, unknown>;
+}
+
+export interface AssessmentReportResponse {
+  attempt_id: string;
+  student_id: string;
+  category: string;
+  assessment_type: string;
+  target_role?: string;
+  total_score: number;
+  max_score: number;
+  percentage: number;
+  passed: boolean;
+  time_spent_seconds: number;
+  correct_count?: number;
+  incorrect_count?: number;
+  unattempted_count?: number;
+  topic_scores: Record<string, { earned: number; total: number; percentage: number }>;
+  difficulty_scores: Record<string, { earned: number; total: number; percentage: number }>;
+  weak_topics: string[];
+  strong_topics: string[];
+  recommendations: string[];
+  competency_state?: string;
+  summary: string;
+  responses?: Array<{
+    question_id: string;
+    question_text?: string;
+    topic: string;
+    difficulty_level: number;
+    question_type: string;
+    is_correct: boolean;
+    marks_awarded: number;
+    max_marks: number;
+    time_spent_seconds: number;
+    explanation?: string;
+    evaluation_detail?: Record<string, unknown>;
+  }>;
+  created_at?: string;
+}
+
+export interface RoleComparisonItem {
+  role_name: string;
+  overall_score: number;
+  confidence_level: 'low' | 'medium' | 'high' | string;
+  data_coverage_percentage: number;
+  required_skills: string[];
+  verified_skills: string[];
+  partially_demonstrated: string[];
+  missing_skills: string[];
+  description: string;
+}
+
+export interface RoleComparisonResponse {
+  student_id: string;
+  strongest_role: string;
+  strongest_score: number;
+  roles_comparison: RoleComparisonItem[];
+  recommended_focus: string;
 }
 
 export interface AssessmentHistoryItem {
