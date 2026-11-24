@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ProofHire 2.0 – Evidence-Based Talent Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f3fb;
+  --card: #ffffff;
+  --ink: #1b1840;
+  --mut: #6b6891;
+  --line: #e6e4f3;
+  --pri: #6c4cf0;
+  --pt: #ece8ff;
+  --ok: #0f9d73;
+  --okt: #dcf6ec;
+  --warn: #c27a00;
+  --wt: #fff0d1;
+  --bad: #d4443b;
+  --bt: #fde4e1;
+  --blu: #2a7bd4;
+  --blt: #e0efff;
+  --side: #18123f;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme=light]) {
+    color-scheme: dark;
+    --bg: #0f0c26;
+    --card: #1a1540;
+    --ink: #ece9ff;
+    --mut: #9d98c9;
+    --line: #2c2658;
+    --pri: #9b84ff;
+    --pt: #2b2368;
+    --ok: #3fd7a5;
+    --okt: #12382e;
+    --warn: #f2b640;
+    --wt: #40300f;
+    --bad: #ff8379;
+    --bt: #43201e;
+    --blu: #74b4f5;
+    --blt: #16304d;
+    --side: #0a0820;
+  }
+}
+
+:root[data-theme=dark] {
+  color-scheme: dark;
+  --bg: #0f0c26;
+  --card: #1a1540;
+  --ink: #ece9ff;
+  --mut: #9d98c9;
+  --line: #2c2658;
+  --pri: #9b84ff;
+  --pt: #2b2368;
+  --ok: #3fd7a5;
+  --okt: #12382e;
+  --warn: #f2b640;
+  --wt: #40300f;
+  --bad: #ff8379;
+  --bt: #43201e;
+  --blu: #74b4f5;
+  --blt: #16304d;
+  --side: #0a0820;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+}
+
+aside {
+  background: var(--side);
+  color: #e9e6ff;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 21px;
+  margin: 0 8px 18px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #fff;
+}
+.logo b {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #8a6cff, #4cc3ff);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 17px;
+}
+
+aside button {
+  all: unset;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #b9b4e6;
+  font-weight: 500;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+aside button:hover { background: #ffffff14; color: #fff; }
+aside button.on { background: #6c4cf0; color: #fff; }
+aside button:focus-visible { outline: 2px solid #fff; }
+
+.sp { flex: 1; }
+.sw {
+  display: flex;
+  gap: 6px;
+  background: #ffffff12;
+  padding: 4px;
+  border-radius: 10px;
+}
+.sw button {
+  flex: 1;
+  justify-content: center;
+  padding: 7px;
+}
+.sw button.on { background: #fff; color: #18123f; font-weight: 700; }
+
+.main {
+  padding: 26px 32px;
+  max-width: 1160px;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 18px; margin: 0 0 4px; font-weight: 700; }
+h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.sub { color: var(--mut); margin: 0; font-size: 14px; }
+
+.top-right { display: flex; gap: 10px; align-items: center; }
+.who {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 6px 14px 6px 6px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+.av {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8a6cff, #4cc3ff);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.grid { display: grid; gap: 16px; }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.hero {
+  background: linear-gradient(120deg, #5b3fe0, #8a6cff 60%, #4cc3ff);
+  color: #fff;
+  border: 0;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hero p { margin: 4px 0 0; opacity: 0.95; }
+.ring {
+  position: relative;
+  width: 110px;
+  height: 110px;
+}
+.ring span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 26px;
+}
+
+.kpi b { font-size: 28px; font-weight: 800; display: block; letter-spacing: -0.02em; }
+.kpi span { color: var(--mut); font-size: 13px; font-weight: 500; }
+.kpi i {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  display: inline-block;
+  margin-top: 4px;
+}
+.up { background: var(--okt); color: var(--ok); }
+.dn { background: var(--bt); color: var(--bad); }
+
+.step {
+  display: flex;
+  gap: 4px;
+  margin: 10px 0 6px;
+}
+.step i {
+  flex: 1;
+  height: 6px;
+  border-radius: 9px;
+  background: var(--line);
+}
+.step i.a { background: var(--pri); }
+.step i.v { background: var(--ok); }
+.step i.x { background: var(--bad); }
+
+.lab {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--mut);
+  font-weight: 600;
+}
+
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 2px 4px 2px 0;
+}
+.Claimed { background: var(--line); color: var(--mut); }
+.Observed { background: var(--line); color: var(--ink); }
+.Evidence-linked { background: var(--blt); color: var(--blu); }
+.Assessed { background: var(--wt); color: var(--warn); }
+.Verified { background: var(--okt); color: var(--ok); }
+.Expired { background: var(--bt); color: var(--bad); }
+.miss { background: var(--bt); color: var(--bad); }
+.have { background: var(--okt); color: var(--ok); }
+
+.btn {
+  font: inherit;
+  font-weight: 700;
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  background: var(--pri);
+  color: #fff;
+  transition: transform 0.1s, opacity 0.15s;
+}
+.btn:hover:not(:disabled) { opacity: 0.92; }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn.ghost { background: var(--pt); color: var(--pri); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.ev { color: var(--mut); font-size: 13px; margin: 4px 0 0; }
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.rule {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex: none;
+}
+.pass { background: var(--okt); color: var(--ok); }
+.fail { background: var(--bt); color: var(--bad); }
+
+.hm {
+  display: grid;
+  grid-template-columns: 60px repeat(5, 1fr);
+  gap: 5px;
+  font-size: 12px;
+  text-align: center;
+}
+.hm div { padding: 9px 0; border-radius: 8px; font-weight: 600; }
+.hm .h { color: var(--mut); font-weight: 700; padding: 4px; }
+
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 400px; }
+td, th { text-align: left; padding: 10px 8px; border-top: 1px solid var(--line); font-size: 14px; }
+th { color: var(--mut); font-weight: 600; border: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.tl {
+  border-left: 2px solid var(--line);
+  margin-left: 8px;
+  padding-left: 18px;
+}
+.tl div {
+  padding: 9px 0;
+  position: relative;
+}
+.tl div:before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 15px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--pri);
+  border: 2px solid var(--card);
+}
+
+code { font-size: 12px; color: var(--mut); word-break: break-all; }
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: 0.25s;
+  pointer-events: none;
+  z-index: 999;
+}
+.toast.s { opacity: 1; transform: none; }
+.alert {
+  background: var(--wt);
+  color: var(--warn);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 600;
+  margin: 10px 0;
+}
+
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; }
+  aside {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 14px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  }
+  .logo { margin: 0 10px 0 0; }
+  .sp { display: none; }
+  .main { padding: 18px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side"></aside>
+  <div class="main">
+    <div class="top" id="top"></div>
+    <div id="v"></div>
+  </div>
+</div>
+<div class="toast" id="t"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const ST = ['Claimed', 'Observed', 'Evidence-linked', 'Assessed', 'Verified', 'Expired'];
+const API_BASE = window.location.origin.startsWith('http') ? (window.location.origin + '/api') : 'http://localhost:8000/api';
+
+const S = {
+  p: 'dash',
+  c: 'A',
+  gh: false,
+  test: false,
+  app: false,
+  apiConnected: false,
+  sk: { Python: 0, SQL: 0, Git: 0, Docker: 0 },
+  ev: {},
+  tasks: [0, 0, 0],
+  res: false,
+  clash: true,
+  fs: 'SQL',
+  pv: { lc: false, rec: true },
+  tl: [],
+  role: 'Backend',
+  as: { i: 0, lvl: 2, score: 0, used: [], hist: [], done: false, cur: null, activeQ: null },
+  pipe: [
+    { n: 'Anita S.', w: 'SQL, Python verified', s: 0 },
+    { n: 'Divya R.', w: 'SQL, Docker, Git verified', s: 1 },
+    { n: 'Imran A.', w: 'Python, SQL verified', s: 0 }
+  ],
+  q: {
+    A: [
+      { id: 1, t: 'Flag 12 students as at-risk', d: 'Predictive agent · weak SQL, low mock scores' },
+      { id: 2, t: 'Add Docker workshop for CSE batch', d: 'Skill-gap agent · 40% of new jobs ask for Docker' }
+    ],
+    B: [
+      { id: 3, t: 'Flag 4 students as at-risk', d: 'Predictive agent · weak Docker' }
+    ]
+  },
+  log: { A: [], B: [] }
+};
+
+const B0 = {
+  CSE: [62, 48, 18, 12, 40],
+  IT: [55, 52, 22, 15, 44],
+  ECE: [70, 66, 35, 30, 58],
+  MECH: [80, 78, 60, 52, 70]
+};
+const SK5 = ['SQL', 'Docker', 'Python', 'Git', 'DSA'];
+const heat = b => S.c === 'A' ? b : b.map(x => Math.max(5, Math.round(x * 0.55)));
+
+const hash = s => {
+  let h = 5381;
+  for (const c of s) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0;
+  return h.toString(16).padStart(8, '0');
+};
+
+function log(a, x) {
+  const L = S.log[S.c];
+  const p = L.length ? L.at(-1).h : '00000000';
+  const t = new Date().toLocaleTimeString();
+  L.push({ a, x, t, p, h: hash(p + a + x + t) });
+}
+
+const ok = () => {
+  const L = S.log[S.c];
+  return L.every((r, i) => r.p === (i ? L[i-1].h : '00000000') && r.h === hash(r.p + r.a + r.x + r.t));
+};
+
+function toast(m) {
+  const t = $('#t');
+  t.textContent = m;
+  t.className = 'toast s';
+  setTimeout(() => t.className = 'toast', 2400);
+}
+
+function addTl(s, k, t) {
+  S.tl.push({ s, k, t, at: new Date().toLocaleTimeString() });
+}
+
+// REST API Helper
+async function apiCall(endpoint, method='GET', body=null) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${API_BASE}${endpoint}`, opts);
+    if (res.ok) {
+      S.apiConnected = true;
+      return await res.json();
+    }
+  } catch (err) {
+    S.apiConnected = false;
+  }
+  return null;
+}
+
+// Check backend status on boot
+async function initBackend() {
+  const health = await apiCall('/health');
+  if (health) {
+    S.apiConnected = true;
+    // Load student competency profile
+    const prof = await apiCall('/competencies/student/student-rahul-01');
+    if (prof && prof.competencies) {
+      prof.competencies.forEach(c => {
+        const stateIdx = ST.indexOf(c.state.charAt(0).toUpperCase() + c.state.slice(1).replace('_', '-'));
+        if (stateIdx >= 0) S.sk[c.skill_name] = stateIdx;
+      });
+      S.gh = prof.student.github_connected;
+    }
+    // Load audit log
+    const auditRes = await apiCall('/audit/COLLEGE-' + S.c);
+    if (auditRes && auditRes.entries && auditRes.entries.length) {
+      S.log[S.c] = auditRes.entries.map(e => ({
+        a: e.actor,
+        x: e.action,
+        t: e.created_at ? e.created_at.split('T')[1].slice(0, 8) : '',
+        p: e.prev_hash,
+        h: e.hash
+      }));
+    }
+    draw();
+  }
+}
+initBackend();
+
+// Action handler object
+const A = {
+  async gh() {
+    S.gh = true;
+    S.sk.Python = 2; // Evidence-linked
+    S.sk.Git = 2;    // Evidence-linked
+    S.ev.Python = '3 repos · 41 commits in api-server';
+    S.ev.Git = 'Commit history across 5 repos';
+    log('student', 'Granted read-only GitHub consent');
+    addTl('Python', 'Commits', '3 repos · 41 commits in api-server');
+    addTl('Git', 'Commits', 'Commit history across 5 repos');
+    log('system', 'Python: Claimed → Evidence-linked');
+    toast('GitHub connected. Python & Git are now Evidence-linked');
+    
+    // Sync with backend API
+    await apiCall('/competencies/github/scan?student_id=student-rahul-01&username=rahulk-dev', 'POST');
+    draw();
+  },
+
+  async rv() {
+    S.gh = false;
+    S.sk.Python = 0;
+    S.sk.Git = 0;
+    S.ev.Python = '';
+    S.ev.Git = '';
+    log('student', 'Revoked GitHub consent');
+    toast('Access revoked pursuant to DPDP');
+    await apiCall('/competencies/github/revoke?student_id=student-rahul-01', 'POST');
+    draw();
+  },
+
+  test() {
+    S.test = true;
+    S.sk.SQL = 3; // Assessed
+    S.ev.SQL = 'Machine test 17/20 · awaiting mentor sign-off';
+    log('system', 'SQL: Claimed → Assessed (test 17/20)');
+    toast('SQL is now Assessed');
+    draw();
+  },
+
+  async ap(id) {
+    const q = S.q[S.c];
+    const i = q.findIndex(x => x.id === id);
+    if (i >= 0) {
+      const item = q[i];
+      log('officer', 'Approved: ' + item.t);
+      q.splice(i, 1);
+      toast('Approved and logged to audit chain');
+      await apiCall('/officer/approvals/action', 'POST', {
+        approval_id: String(id),
+        officer_name: 'T&P Officer',
+        action: 'approved'
+      });
+      draw();
+    }
+  },
+
+  async appeal() {
+    S.app = true;
+    log('student', 'Appealed rule v3 decision');
+    toast('Appeal registered with Placement Officer');
+    await apiCall('/eligibility/appeal', 'POST', {
+      decision_id: 'decision-rahul-01',
+      student_id: 'student-rahul-01',
+      reason: 'Active backlog cleared in re-examination; verified database credentials pending sign-off'
+    });
+    draw();
+  },
+
+  async aans(j) {
+    const a = S.as;
+    const q = a.activeQ || Q[a.cur || 0];
+    const r = (j === q[2]);
+    a.hist.push([q[0], r, a.lvl]);
+    if (r) a.score++;
+    a.lvl = Math.max(1, Math.min(3, a.lvl + (r ? 1 : -1)));
+    a.i++;
+    a.cur = null;
+    a.activeQ = null;
+
+    if (a.i >= 5) {
+      a.done = true;
+      S.test = true;
+      if (a.score >= 3) {
+        S.sk.SQL = 3; // Assessed
+        S.ev.SQL = 'Adaptive assessment ' + a.score + '/5 · awaiting mentor sign-off';
+      }
+      log('system', 'SQL assessment ' + a.score + '/5 → ' + (a.score >= 3 ? 'Assessed' : 'no change'));
+      addTl('SQL', 'Assessment', a.score + '/5 adaptive test');
+      
+      // Complete in backend
+      await apiCall('/assessments/complete?student_id=student-rahul-01&category=SQL&score=' + a.score + '&total=5', 'POST');
+    }
+    toast(r ? 'Correct! Complexity adapted upwards.' : 'Incorrect. Foundational questions enabled.');
+    draw();
+  },
+
+  retake() {
+    S.as = { i: 0, lvl: 2, score: 0, used: [], hist: [], done: false, cur: null, activeQ: null };
+    draw();
+  },
+
+  async mentor() {
+    if (S.sk.SQL !== 3) {
+      toast('Pass the SQL assessment first (Assessed state required)');
+      return;
+    }
+    S.sk.SQL = 4; // Verified
+    S.ev.SQL += ' · mentor signed off';
+    log('mentor', 'SQL: Assessed → Verified (Prof. Meena)');
+    addTl('SQL', 'Mentor sign-off', 'Verified by Prof. Meena (DBMS Lab)');
+    toast('SQL is now Verified with high confidence');
+    
+    await apiCall('/competencies/mentor-signoff', 'POST', {
+      student_id: 'student-rahul-01',
+      skill_name: 'SQL',
+      mentor_name: 'Prof. Meena (DBMS Lab)'
+    });
+    draw();
+  },
+
+  async evi(k) {
+    const m = {
+      cert: ['Python', 'Python certificate (NPTEL)', 'cert'],
+      hack: ['Git', 'Hackathon project, 3 contributors', 'hackathon'],
+      lab: ['SQL', 'DBMS lab record, 9/10', 'lab']
+    }[k];
+    addTl(m[0], k, m[1]);
+    S.sk[m[0]] = Math.max(S.sk[m[0]], 1);
+    log('student', 'Added evidence: ' + m[1]);
+    toast('Evidence added: ' + m[1]);
+    
+    await apiCall('/competencies/evidence', 'POST', {
+      student_id: 'student-rahul-01',
+      skill_name: m[0],
+      kind: m[2],
+      title: m[1],
+      ref_url: 'https://proofhire.internal/evidence/' + k
+    });
+    draw();
+  },
+
+  role(r) {
+    S.role = r;
+    draw();
+  },
+
+  async adv(i) {
+    const p = S.pipe[i];
+    p.s = Math.min(3, p.s + 1);
+    log(p.s === 2 ? 'officer' : 'recruiter', p.n + ' moved to ' + PS[p.s]);
+    toast(p.n + ' → ' + PS[p.s]);
+    
+    await apiCall('/recruiter/pipeline/advance', 'POST', {
+      application_id: 'app-' + (i + 1),
+      officer_approval: (p.s === 2)
+    });
+    draw();
+  },
+
+  async task(i) {
+    S.tasks[i] = 1;
+    log('student', 'Completed learning task ' + (i + 1));
+    if (i === 1) S.ev.GitProj = 'Mini project repository pushed';
+    toast('Task completed. New evidence linked to profile');
+    
+    await apiCall('/learning/task/complete', 'POST', {
+      task_id: 'task-remediation-' + (i + 1),
+      student_id: 'student-rahul-01'
+    });
+    draw();
+  },
+
+  res() {
+    S.res = true;
+    toast('Verified resume compiled from verified competencies');
+    draw();
+  },
+
+  async alloc() {
+    S.clash = false;
+    log('officer', 'Confirmed auto-allocated conflict-free slot for Beta Soft');
+    toast('Clash resolved and logged to audit chain');
+    
+    await apiCall('/companies/drives/resolve-clash?drive_title=Beta Soft&new_day=Thu&college_id=COLLEGE-' + S.c, 'POST');
+    draw();
+  },
+
+  fs(s) {
+    S.fs = s;
+    draw();
+  },
+
+  pv(k) {
+    S.pv[k] = !S.pv[k];
+    log('student', 'Consent updated: ' + k + ' = ' + S.pv[k]);
+    toast('Consent settings saved (DPDP logged)');
+    draw();
+  },
+
+  async exp() {
+    log('officer', 'Exported statutory NAAC/NIRF accreditation report');
+    toast('NAAC/NIRF report compiled and exported');
+    await apiCall('/officer/export-report?college_id=COLLEGE-' + S.c);
+    draw();
+  },
+
+  async tamper() {
+    const L = S.log[S.c];
+    if (L.length) {
+      L[0].x += ' [TAMPERED_BY_ATTACKER]';
+    }
+    toast('Simulating tampering: cryptographic hash chain broken!');
+    await apiCall('/audit/COLLEGE-' + S.c + '/tamper', 'POST');
+    draw();
+  }
+};
+
+const go = p => { S.p = p; draw(); };
+
+const ring = v => `<div class="ring">
+  <svg viewBox="0 0 36 36" width="110" height="110">
+    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#ffffff40" stroke-width="3"/>
+    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-dasharray="${v * 0.974} 100" transform="rotate(-90 18 18)"/>
+  </svg>
+  <span>${v}</span>
+</div>`;
+
+function skillCard(n) {
+  const i = S.sk[n] || 0;
+  const txt = ST[i];
+  return `<div class="card">
+    <div class="row">
+      <h3>${n}</h3>
+      <span class="pill ${txt}">${txt}</span>
+    </div>
+    <div class="step">
+      ${[0,1,2,3,4].map(k => `<i class="${k <= i ? (i === 4 ? 'v' : 'a') : ''}"></i>`).join('')}
+    </div>
+    <div class="lab">
+      <span>Claimed</span>
+      <span>Evidence</span>
+      <span>Assessed</span>
+      <span>Verified</span>
+    </div>
+    <p class="ev">${S.ev[n] || 'No evidence yet. Connect GitHub, complete an assessment, or add a mentor sign-off.'}</p>
+  </div>`;
+}
+
+const score = () => Math.min(96, 38 + S.sk.Python * 5 + S.sk.Git * 3 + (S.sk.SQL === 4 ? 22 : S.sk.SQL === 3 ? 12 : 0));
+
+const Q = [
+  ['Which clause filters rows before grouping occurs in a SELECT query?', ['WHERE', 'ORDER BY', 'HAVING'], 0, 1],
+  ['Which keyword eliminates duplicate records from a query result set?', ['UNIQUE', 'DISTINCT', 'DROP'], 1, 1],
+  ['Which JOIN keeps every row from the left table regardless of matching records?', ['INNER JOIN', 'LEFT JOIN', 'CROSS JOIN'], 1, 2],
+  ['Which aggregate function calculates the total number of records?', ['SUM', 'COUNT', 'AVG'], 1, 2],
+  ['Which clause filters grouped records produced by an aggregation?', ['WHERE', 'HAVING', 'LIMIT'], 1, 3],
+  ['A foreign key constraint primarily enforces what database guarantee?', ['Speed', 'Referential integrity', 'Encryption'], 1, 3],
+  ['ROW_NUMBER() and RANK() are classifications of what SQL feature?', ['Window function', 'Join type', 'Table Constraint'], 0, 3]
+];
+const PS = ['Shortlisted', 'Interview', 'Offer', 'Accepted'];
+
+function pickQ() {
+  const a = S.as;
+  for (const d of [0, 1, -1, 2, -2]) {
+    const l = a.lvl + d;
+    if (l < 1 || l > 3) continue;
+    const k = Q.findIndex((q, i) => q[3] === l && !a.used.includes(i));
+    if (k >= 0) {
+      a.used.push(k);
+      return k;
+    }
+  }
+  return 0;
+}
+
+// 16 Views Definitions
+const pages = {
+  dash() {
+    const sq = S.sk.SQL === 4;
+    return `<div class="grid">
+      <div class="card hero">
+        ${ring(score())}
+        <div style="flex:1;min-width:230px">
+          <h2 style="font-size:22px">Placement Readiness Index</h2>
+          <p>Target role: Backend Developer · Acme Tech (Predictive score)</p>
+          <div style="margin-top:14px" class="row" style="justify-content:flex-start">
+            <button class="btn" style="background:#fff;color:#4a2fd0" onclick="A.gh()" ${S.gh ? 'disabled' : ''}>Connect GitHub</button>
+            ${S.gh ? '<button class="btn" style="background:#ffffff30" onclick="A.rv()">Revoke access</button>' : ''}
+            <span style="font-size:13px;opacity:0.95">Read-only OAuth. Student can revoke consent at any time.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g3">
+        <div class="card kpi">
+          <span>Verified Competencies</span>
+          <b>${Object.values(S.sk).filter(x => x === 4).length}</b>
+        </div>
+        <div class="card kpi">
+          <span>Evidence-Linked Skills</span>
+          <b>${Object.values(S.sk).filter(x => x === 2).length}</b>
+        </div>
+        <div class="card kpi">
+          <span>Mock Drive Status</span>
+          <b>${S.test ? 'Completed' : 'Pending'}</b>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        ${Object.keys(S.sk).map(skillCard).join('')}
+      </div>
+
+      <div class="card">
+        <h2>Skill Gap Analysis for Acme Tech</h2>
+        <p class="sub">Required competencies compared with your verified evidence</p>
+        <div style="margin:12px 0">
+          ${['Python', 'SQL', 'Git', 'Docker'].map(n => `<span class="pill ${S.sk[n] >= 2 ? 'have' : 'miss'}">${n} ${S.sk[n] >= 2 ? '✓' : 'missing proof'}</span>`).join('')}
+        </div>
+        ${sq ? '' : '<div class="alert">SQL is currently Claimed only. 38 of 40 recent Acme Tech job requisitions require verified SQL proficiency.</div>'}
+        <div class="row" style="margin-top:14px">
+          <span class="ev">Adaptive assessment: Technical aptitude, database query simulation, system design</span>
+          <button class="btn" onclick="go('asm')" ${sq ? 'disabled' : ''}>${sq ? 'SQL Verified' : 'Start Adaptive SQL Assessment'}</button>
+        </div>
+      </div>
+
+      ${S.test ? `<div class="card">
+        <h2>Mock Drive Diagnostic Report</h2>
+        <div class="grid g3" style="margin-top:10px">
+          <div class="kpi"><span>Aptitude</span><b>21/30</b></div>
+          <div class="kpi"><span>Machine Test</span><b>${S.as.score}/5</b></div>
+          <div class="kpi"><span>Interview Readiness</span><b>Weak: DB Design</b></div>
+        </div>
+        <p class="ev">SQL state is ${ST[S.sk.SQL]}: scored ${S.as.score}/5 on adaptive technical assessment. 2 remediation tasks and a mentor sign-off will complete verification.</p>
+      </div>` : ''}
+    </div>`;
+  },
+
+  drives() {
+    const sq = S.sk.SQL === 4;
+    const R = [
+      ['CGPA ≥ 7.0', 'Your value: 7.8', 1],
+      ['Active backlogs = 0', 'Your value: 1 backlog', 0],
+      ['SQL Verified', 'Your status: ' + ST[S.sk.SQL], sq]
+    ];
+    return `<div class="card">
+      <div class="row">
+        <div>
+          <h2>Acme Tech · Backend Developer Drive</h2>
+          <p class="sub">Eligibility Rules v3 · Evaluated deterministically with immutable input snapshots</p>
+        </div>
+        <span class="pill miss">Not Eligible</span>
+      </div>
+      ${R.map(r => `<div class="rule">
+        <span class="dot ${r[2] ? 'pass' : 'fail'}">${r[2] ? '✓' : '✕'}</span>
+        <div>
+          <b>${r[0]}</b>
+          <div class="ev">${r[1]}</div>
+        </div>
+      </div>`).join('')}
+      <div class="row" style="margin-top:16px">
+        <span class="ev">AI never automatically rejects a student. Every decision is logged with rule version and input values for review.</span>
+        <button class="btn ghost" onclick="A.appeal()" ${S.app ? 'disabled' : ''}>${S.app ? 'Appeal Sent to Officer' : 'Submit Human Appeal'}</button>
+      </div>
+    </div>`;
+  },
+
+  off() {
+    const f = S.c === 'A' ? [['Male', 42], ['Female', 31], ['General', 44], ['Reserved', 29]] : [['Male', 38], ['Female', 37], ['General', 40], ['Reserved', 36]];
+    const mx = Math.max(...f.map(x => x[1]));
+    return `<div class="grid">
+      <div class="grid g3">
+        <div class="card kpi">
+          <span>Predicted Placement Rate</span>
+          <b>${S.c === 'A' ? '68%' : '74%'}</b>
+          <i class="up">+4% vs last year</i>
+        </div>
+        <div class="card kpi">
+          <span>Verified Skill Coverage</span>
+          <b>${S.c === 'A' ? '41%' : '57%'}</b>
+          <i class="up">+9%</i>
+        </div>
+        <div class="card kpi">
+          <span>Gap Closure Rate</span>
+          <b>${S.c === 'A' ? '33%' : '46%'}</b>
+          <i class="dn">Needs intervention</i>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Branch-Wise Skill Deficiency Heatmap</h2>
+        <p class="sub">Percentage of cohort lacking verified proficiency (darker shade indicates higher deficiency)</p>
+        <div class="hm" style="margin-top:14px">
+          <div class="h"></div>
+          ${SK5.map(s => `<div class="h">${s}</div>`).join('')}
+          ${Object.entries(B0).map(([b, v]) => `<div class="h" style="text-align:left;padding-top:9px">${b}</div>` + heat(v).map(x => `<div style="background:color-mix(in srgb,var(--bad) ${x}%,var(--card));color:${x > 55 ? '#fff' : 'var(--ink)'}">${x}%</div>`).join('')).join('')}
+        </div>
+      </div>
+
+      <div class="alert">Industry Alert: 40% of newly registered enterprise requisitions demand Docker, but only ${S.c === 'A' ? '10%' : '22%'} of the graduating cohort has verified proficiency.</div>
+
+      <div class="card">
+        <h2>Four-Fifths Rule Fairness Monitoring</h2>
+        <p class="sub">Disparate impact ratio below 0.80 automatically triggers placement officer review.</p>
+        <div class="tw">
+          <table>
+            <tr><th>Demographic Group</th><th>Selection Rate</th><th>Impact Ratio</th><th>Compliance Status</th></tr>
+            ${f.map(([g, r]) => {
+              const x = r / mx;
+              return `<tr>
+                <td><b>${g}</b></td>
+                <td>${r}%</td>
+                <td>${x.toFixed(2)}</td>
+                <td><span class="pill ${x < 0.8 ? 'miss' : 'have'}">${x < 0.8 ? 'Review Flagged' : 'Compliant'}</span></td>
+              </tr>`;
+            }).join('')}
+          </table>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  appr() {
+    const q = S.q[S.c];
+    return `<div class="card">
+      <h2>Officer Human-in-the-Loop Approval Queue</h2>
+      <p class="sub">AI agents propose interventions; zero automated administrative changes occur without placement officer sign-off.</p>
+      ${q.length ? q.map(x => `<div class="rule">
+        <div style="flex:1">
+          <b>${x.t}</b>
+          <div class="ev">${x.d}</div>
+        </div>
+        <button class="btn" onclick="A.ap(${x.id})">Approve Proposal</button>
+      </div>`).join('') : '<p class="ev" style="margin-top:12px">Approval queue is empty. Agent proposals will appear here.</p>'}
+    </div>`;
+  },
+
+  aud() {
+    const L = S.log[S.c];
+    return `<div class="card">
+      <div class="row">
+        <div>
+          <h2>Cryptographic SHA-256 Audit Trail · College ${S.c}</h2>
+          <p class="sub">Append-only ledger where every record cryptographically hashes the previous row.</p>
+        </div>
+        <div class="row">
+          <span class="pill ${ok() ? 'have' : 'miss'}">${ok() ? 'Hash Chain Intact' : 'Integrity Broken!'}</span>
+          <button class="btn ghost" onclick="A.tamper()">Simulate Tampering</button>
+        </div>
+      </div>
+      <div class="tl" style="margin-top:16px">
+        ${L.length ? L.slice().reverse().map(r => `<div>
+          <b>${r.a}</b>: ${r.x}<br>
+          <code>Prev: ${r.p.slice(0, 16)}... | Hash: ${r.h.slice(0, 16)}... | ${r.t}</code>
+        </div>`).join('') : '<p class="ev">No events logged yet. Connect GitHub or approve an intervention.</p>'}
+      </div>
+    </div>`;
+  },
+
+  path() {
+    const D = S.tasks.filter(x => x).length;
+    const L3 = [
+      ['Complete 2 SQL practice sets', 'Joins, aggregations, and window functions. Adds practice evidence.'],
+      ['Build a library database mini-project', 'Schema with referential integrity. Push to GitHub to create code evidence.'],
+      ['Retake the SQL adaptive machine assessment', 'Target score >= 80%. Validated result unlocks authorized mentor sign-off.']
+    ];
+    return `<div class="grid">
+      <div class="card">
+        <h2>Personalized Learning Roadmap: Close the SQL Gap</h2>
+        <p class="sub">Dynamically constructed from your Acme Tech gap analysis. Every completed milestone generates verifiable evidence.</p>
+        <div class="step" style="margin:14px 0">
+          <i class="${D > 0 ? 'v' : ''}"></i>
+          <i class="${D > 1 ? 'v' : ''}"></i>
+          <i class="${D > 2 ? 'v' : ''}"></i>
+        </div>
+        <b>${D} of 3 Milestones Completed</b>
+      </div>
+      ${L3.map((t, i) => `<div class="card row">
+        <div>
+          <h3>${t[0]}</h3>
+          <p class="ev">${t[1]}</p>
+        </div>
+        <button class="btn ${S.tasks[i] ? 'ghost' : ''}" onclick="A.task(${i})" ${S.tasks[i] ? 'disabled' : ''}>
+          ${S.tasks[i] ? 'Completed ✓' : 'Mark Done'}
+        </button>
+      </div>`).join('')}
+    </div>`;
+  },
+
+  res() {
+    const v = Object.entries(S.sk).filter(x => x[1] >= 2);
+    return `<div class="card row">
+      <div>
+        <h2>On-Demand Verifiable Resume</h2>
+        <p class="sub">Compiled directly from your evidence-backed profile. Unverified self-claims are omitted.</p>
+      </div>
+      <button class="btn" onclick="A.res()">Generate Verified Resume</button>
+    </div>
+    ${S.res ? `<div class="card" style="margin-top:16px;max-width:680px">
+      <h2 style="font-size:22px">Rahul K.</h2>
+      <p class="sub">Candidate for Backend Developer · Apex Engineering Institute</p>
+      <h3 style="margin-top:16px">Verifiable Competencies</h3>
+      ${v.length ? v.map(([n, i]) => `<div class="rule">
+        <span class="pill ${ST[i]}">${ST[i]}</span>
+        <div>
+          <b>${n}</b>
+          <div class="ev">${S.ev[n]}</div>
+        </div>
+      </div>`).join('') : '<p class="ev">No verified skills yet. Connect GitHub or complete an assessment.</p>'}
+      <p class="ev" style="margin-top:14px">All listed skills link to immutable cryptographic verification records.</p>
+    </div>` : ''}`;
+  },
+
+  priv() {
+    const row = (k, l, d) => `<div class="rule">
+      <div style="flex:1">
+        <b>${l}</b>
+        <div class="ev">${d}</div>
+      </div>
+      <button class="btn ${S.pv[k] ? '' : 'ghost'}" onclick="A.pv('${k}')">${S.pv[k] ? 'Enabled' : 'Disabled'}</button>
+    </div>`;
+    const F = [
+      ['Adaptive SQL machine test 17/20', 60],
+      ['Python backend repositories', 25],
+      ['Commit frequency & code consistency', 15]
+    ];
+    return `<div class="grid g2">
+      <div class="card">
+        <h2>Consent & Privacy Management</h2>
+        <p class="sub">Granular student control aligned with Indian DPDP principles. Revocable anytime.</p>
+        ${row('lc', 'LeetCode Public Synchronization', 'Import problem-solving statistics (read-only)')}
+        ${row('rec', 'Approved Recruiter Visibility', 'Only verified & evidence-linked competencies are surfaced')}
+        <div class="rule">
+          <div style="flex:1">
+            <b>GitHub Read-Only OAuth Integration</b>
+            <div class="ev">${S.gh ? 'Connected (read-only public activity)' : 'Disconnected'}</div>
+          </div>
+          ${S.gh ? '<button class="btn ghost" onclick="A.rv()">Revoke Consent</button>' : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Explainability: Why is SQL Verified?</h2>
+        <p class="sub">Transparent breakdown of evidence contributing to verification</p>
+        ${F.map(f => `<div style="margin:12px 0">
+          <div class="row">
+            <span>${f[0]}</span>
+            <b>${f[1]}%</b>
+          </div>
+          <div class="step">
+            <i class="a" style="flex:0 0 ${f[1]}%"></i>
+            <i></i>
+          </div>
+        </div>`).join('')}
+        <p class="ev">Confidence level: High (0.98). Valid for 12 months. Synthetic AI code scores are never utilized.</p>
+      </div>
+    </div>`;
+  },
+
+  rec() {
+    const P = [
+      ['Anita S.', 'CSE', ['SQL', 'Python', 'Docker']],
+      ['Karthik M.', 'IT', ['Python', 'Git']],
+      ['Priya D.', 'CSE', ['SQL', 'Git']],
+      ['Imran A.', 'ECE', ['Python', 'SQL']],
+      ['Divya R.', 'IT', ['SQL', 'Docker', 'Git']]
+    ];
+    const r = P.filter(p => p[2].includes(S.fs));
+    return `<div class="card">
+      <h2>Verified Talent Discovery</h2>
+      <p class="sub">Search candidates with tamper-evident skill proof. Transparent match reasons for every profile.</p>
+      <div class="row" style="justify-content:flex-start;margin:12px 0">
+        ${['SQL', 'Python', 'Docker', 'Git'].map(s => `<button class="btn ${S.fs === s ? '' : 'ghost'}" onclick="A.fs('${s}')">${s}</button>`).join('')}
+      </div>
+      ${r.map(p => `<div class="rule">
+        <span class="av">${p[0][0]}</span>
+        <div style="flex:1">
+          <b>${p[0]}</b> · ${p[1]}
+          <div class="ev">Verified via ${S.fs === 'Docker' ? 'mentor sign-off' : 'proctored machine assessment'} · valid for 12 months</div>
+        </div>
+        <span class="pill have">Match Reason: ${S.fs} Verified</span>
+      </div>`).join('')}
+    </div>`;
+  },
+
+  cal() {
+    const D = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const E = [
+      [0, 'Acme Tech', 'Campus Visit'],
+      [1, 'Acme Tech', 'Coding Assessment'],
+      [2, 'Gamma Labs', 'Technical Interviews'],
+      [S.clash ? 2 : 3, 'Beta Soft', 'Company Presentation'],
+      [4, 'Gamma Labs', 'Offer Discussions']
+    ];
+    return `<div class="card">
+      <div class="row">
+        <div>
+          <h2>Campus Placement Drive Calendar</h2>
+          <p class="sub">Multi-company scheduling with automated conflict detection and resolution</p>
+        </div>
+        ${S.clash ? '<span class="pill miss">1 Slot Clash on Wednesday</span>' : '<span class="pill have">No Clashes · Optimized</span>'}
+      </div>
+      <div class="tw">
+        <div class="grid" style="grid-template-columns:repeat(5,minmax(110px,1fr));margin-top:16px">
+          ${D.map((d, i) => `<div>
+            <div class="ev" style="font-weight:700">${d}</div>
+            ${E.filter(e => e[0] === i).map(e => `<div class="pill ${S.clash && i === 2 ? 'miss' : 'Evidence-linked'}" style="display:block;border-radius:10px;margin:6px 0;padding:8px">
+              <b>${e[1]}</b><br>${e[2]}
+            </div>`).join('')}
+          </div>`).join('')}
+        </div>
+      </div>
+      ${S.clash ? `<div class="alert" style="margin-top:16px">
+        Placement Agent Suggestion: Reschedule Beta Soft visit to Thursday. Conflict resolved with zero overlap.
+        <div style="margin-top:10px">
+          <button class="btn" onclick="A.alloc()">Confirm Slot Reallocation</button>
+        </div>
+      </div>` : ''}
+    </div>`;
+  },
+
+  rep() {
+    const B = [['Before Intervention', 60], ['After Intervention', 25]];
+    return `<div class="grid g2">
+      <div class="card">
+        <h2>Intervention Effectiveness: SQL Gap Closure</h2>
+        <p class="sub">Share of CSE cohort lacking verified proficiency before vs after targeted workshop</p>
+        ${B.map(b => `<div style="margin:14px 0">
+          <div class="row">
+            <span>${b[0]}</span>
+            <b>${b[1]}%</b>
+          </div>
+          <div class="step">
+            <i class="${b[1] > 40 ? 'x' : 'v'}" style="flex:0 0 ${b[1]}%"></i>
+            <i></i>
+          </div>
+        </div>`).join('')}
+        <p class="ev">The officer scheduled the targeted workshop after the cohort heatmap revealed a 60% deficiency.</p>
+      </div>
+
+      <div class="card">
+        <h2>Statutory Accreditation Export</h2>
+        <p class="sub">NAAC and NIRF-compliant placement and higher studies reporting</p>
+        <ul class="ev" style="line-height:1.8">
+          <li>Audited placement counts, median & highest CTC packages</li>
+          <li>Higher education enrollments across top institutions</li>
+          <li>Departmental and demographic placement distributions</li>
+        </ul>
+        <button class="btn" style="margin-top:10px" onclick="A.exp()">Export Statutory Report</button>
+      </div>
+    </div>`;
+  },
+
+  rdy() {
+    const R = {
+      Backend: ['Python', 'SQL', 'Git', 'Docker'],
+      'Data Analyst': ['Python', 'SQL'],
+      Frontend: ['Git']
+    };
+    const req = R[S.role] || R.Backend;
+    const cov = Math.round(100 * req.filter(n => S.sk[n] >= 2).length / req.length);
+    const ver = Math.round(100 * req.filter(n => S.sk[n] === 4).length / req.length);
+    const pa = S.test ? S.as.score * 20 : 0;
+    const F = [
+      ['Verified Competencies', ver, 35],
+      ['Evidence Coverage', cov, 20],
+      ['Practical Assessment', pa, 25],
+      ['Aptitude Score', S.test ? 70 : 0, 10],
+      ['Interview Readiness', S.test ? 55 : 0, 10]
+    ];
+    const tot = Math.round(F.reduce((a, f) => a + f[1] * f[2] / 100, 0));
+    return `<div class="grid">
+      <div class="card">
+        <div class="row">
+          <div>
+            <h2>Placement Readiness Index</h2>
+            <p class="sub">An explainable preparation indicator with zero black-box scoring. Not an automated hiring guarantee.</p>
+          </div>
+          <div class="row">
+            ${Object.keys(R).map(r => `<button class="btn ${S.role === r ? '' : 'ghost'}" onclick="A.role('${r}')">${r}</button>`).join('')}
+          </div>
+        </div>
+        <div class="kpi" style="margin-top:16px">
+          <b style="font-size:44px">${tot}/100</b>
+          <span>For ${S.role} · Confidence: ${S.test ? 'Medium' : 'Low'} (${S.test ? 'Practical assessment validated' : 'Assessment pending'})</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Transparent Component Breakdown</h2>
+        ${F.map(f => `<div style="margin:14px 0">
+          <div class="row">
+            <span>${f[0]} <span class="ev">(Weight ${f[2]}%)</span></span>
+            <b>${f[1]}%</b>
+          </div>
+          <div class="step">
+            <i class="a" style="flex:0 0 ${f[1]}%"></i>
+            <i></i>
+          </div>
+        </div>`).join('')}
+        <p class="ev">Required competencies for ${S.role}: ${req.join(', ')}. Switch roles to compare preparation gaps.</p>
+      </div>
+    </div>`;
+  },
+
+  evd() {
+    return `<div class="grid g2">
+      <div class="card">
+        <h2>Submit Verifiable Evidence</h2>
+        <p class="sub">Multiple evidence pathways guarantee that students without GitHub accounts are never penalized.</p>
+        <div class="grid" style="margin-top:14px">
+          <button class="btn ghost" onclick="A.evi('cert')">Add NPTEL Certificate (Python)</button>
+          <button class="btn ghost" onclick="A.evi('hack')">Add Hackathon Project (Git)</button>
+          <button class="btn ghost" onclick="A.evi('lab')">Add DBMS Lab Record (SQL)</button>
+          <button class="btn" onclick="A.mentor()">Request Mentor Sign-Off (SQL)</button>
+        </div>
+        <p class="ev">Strict Rule: Code activity alone produces Evidence-linked status. Verified status requires validated assessment + authorized sign-off.</p>
+      </div>
+
+      <div class="card">
+        <h2>Verifiable Evidence Timeline</h2>
+        <p class="sub">Provenance, timestamp, and verification method for every record</p>
+        <div class="tl">
+          ${S.tl.length ? S.tl.slice().reverse().map(e => `<div>
+            <b>${e.s}</b> · ${e.k}<br>
+            <span class="ev">${e.t}</span><br>
+            <code>${e.at}</code>
+          </div>`).join('') : '<p class="ev">No evidence recorded yet. Connect GitHub or add a proof artifact.</p>'}
+        </div>
+      </div>
+    </div>`;
+  },
+
+  asm() {
+    const a = S.as;
+    if (a.done) {
+      return `<div class="card">
+        <h2>Adaptive Assessment Completed</h2>
+        <div class="kpi" style="margin:12px 0">
+          <b>${a.score}/5</b>
+        </div>
+        <p class="sub">${a.score >= 3 ? 'Passed! SQL competency is now Assessed. An authorized mentor sign-off will upgrade it to Verified.' : 'Score below 60% threshold. Follow the personalized learning path and retake.'}</p>
+        <div style="margin-top:16px">
+          ${a.hist.map((h, i) => `<div class="rule">
+            <span class="dot ${h[1] ? 'pass' : 'fail'}">${h[1] ? '✓' : '✕'}</span>
+            <div>
+              Q${i + 1} · Level ${h[2]}
+              <div class="ev">${h[0]}</div>
+            </div>
+          </div>`).join('')}
+        </div>
+        <div class="row" style="margin-top:16px;justify-content:flex-start">
+          <button class="btn ghost" onclick="A.retake()">Retake Assessment</button>
+          <button class="btn" onclick="go('evd')">View Evidence & Sign-Off</button>
+        </div>
+      </div>`;
+    }
+
+    if (a.cur == null) a.cur = pickQ();
+    const q = Q[a.cur];
+    return `<div class="card">
+      <div class="row">
+        <div>
+          <h2>Adaptive SQL Competency Assessment</h2>
+          <p class="sub">Question ${a.i + 1} of 5 · Difficulty Level ${a.lvl} of 3</p>
+        </div>
+        <span class="pill Evidence-linked">Real-Time Adaptive Scaling</span>
+      </div>
+      <div class="step" style="margin:14px 0">
+        ${[0, 1, 2, 3, 4].map(k => `<i class="${k < a.i ? 'v' : ''}"></i>`).join('')}
+      </div>
+      <h3 style="margin:16px 0;font-size:17px">${q[0]}</h3>
+      ${q[1].map((o, j) => `<button class="btn ghost" style="display:block;width:100%;text-align:left;margin:8px 0;padding:12px 16px" onclick="A.aans(${j})">${o}</button>`).join('')}
+    </div>`;
+  },
+
+  pipe() {
+    return `<div class="card">
+      <h2>Candidate Hiring Pipeline · Acme Tech</h2>
+      <p class="sub">Unified candidate tracking from shortlist to offer. Offers require institutional placement officer sign-off.</p>
+      ${S.pipe.map((p, i) => `<div class="rule">
+        <span class="av">${p.n[0]}</span>
+        <div style="flex:1">
+          <b>${p.n}</b>
+          <div class="ev">${p.w}</div>
+          <div class="step">${[0, 1, 2, 3].map(k => `<i class="${k <= p.s ? 'a' : ''}"></i>`).join('')}</div>
+          <div class="lab">
+            <span>Shortlisted</span>
+            <span>Interview</span>
+            <span>Offer</span>
+            <span>Accepted</span>
+          </div>
+        </div>
+        <button class="btn ${p.s === 3 ? 'ghost' : ''}" onclick="A.adv(${i})" ${p.s === 3 ? 'disabled' : ''}>
+          ${p.s === 3 ? 'Accepted ✓' : p.s === 1 ? 'Approve Offer (Officer)' : 'Move to ' + PS[p.s + 1]}
+        </button>
+      </div>`).join('')}
+    </div>`;
+  },
+
+  uni() {
+    const C = [
+      ['College A (Apex)', 68, 41, 33, 1],
+      ['College B (Beacon)', 74, 57, 46, 0],
+      ['College C (Crestline)', 61, 35, 28, 2]
+    ];
+    return `<div class="card">
+      <h2>Multi-College Institutional Benchmark</h2>
+      <p class="sub">University administrators inspect macro-level comparative indicators only. Student records and private evidence remain strictly quarantined within each college tenant.</p>
+      <div class="tw" style="margin-top:14px">
+        <table>
+          <tr>
+            <th>College Tenant</th>
+            <th>Placement Rate</th>
+            <th>Verified Coverage</th>
+            <th>Gap Closure</th>
+            <th>Fairness Flags</th>
+          </tr>
+          ${C.map(c => `<tr>
+            <td><b>${c[0]}</b></td>
+            <td>${c[1]}%</td>
+            <td>${c[2]}%</td>
+            <td>${c[3]}%</td>
+            <td><span class="pill ${c[4] ? 'miss' : 'have'}">${c[4] ? c[4] + ' Action Required' : 'None'}</span></td>
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>`;
+  }
+};
+
+const NAV = [
+  ['dash', 'Dashboard', 'Student'],
+  ['rdy', 'Readiness', 'Student'],
+  ['evd', 'Evidence', 'Student'],
+  ['path', 'Learning Path', 'Student'],
+  ['res', 'Resume', 'Student'],
+  ['priv', 'Privacy & Consent', 'Student'],
+  ['drives', 'My Drives', 'Student'],
+  ['off', 'Cohort Insights', 'Officer'],
+  ['appr', 'Approvals Queue', 'Officer'],
+  ['rec', 'Talent Search', 'Officer'],
+  ['cal', 'Drive Calendar', 'Officer'],
+  ['rep', 'Reports & Export', 'Officer'],
+  ['pipe', 'Hiring Pipeline', 'Recruiter'],
+  ['uni', 'University View', 'University'],
+  ['aud', 'Audit Log', 'Officer']
+];
+
+const T = {
+  dash: 'Student Talent Profile',
+  rdy: 'Placement Readiness Index',
+  evd: 'Verifiable Evidence Management',
+  asm: 'Adaptive Technical Assessment',
+  path: 'Personalized Remediation Path',
+  res: 'One-Click Verifiable Resume',
+  priv: 'Privacy & DPDP Governance',
+  drives: 'Drive Eligibility Evaluation',
+  off: 'Cohort Intelligence & Heatmap',
+  appr: 'Human-in-the-Loop Approvals',
+  rec: 'Verified Talent Search',
+  cal: 'Drive Operations & Calendar',
+  rep: 'Institutional Accreditation',
+  pipe: 'Candidate Hiring Pipeline',
+  uni: 'Multi-College University Benchmark',
+  aud: 'Cryptographic SHA-256 Audit Chain'
+};
+
+function draw() {
+  const rl = ['dash', 'drives', 'path', 'res', 'priv', 'rdy', 'evd', 'asm'].includes(S.p)
+    ? 's'
+    : S.p === 'pipe' ? 'r' : S.p === 'uni' ? 'u' : 'o';
+
+  // Render Sidebar
+  $('#side').innerHTML = `
+    <div class="logo"><b>P</b>ProofHire 2.0</div>
+    ${NAV.map(n => `<button class="${S.p === n[0] ? 'on' : ''}" onclick="go('${n[0]}')">
+      ${n[1]}<small style="margin-left:auto;opacity:.6">${n[2][0]}</small>
+    </button>`).join('')}
+    <div class="sp"></div>
+    <div class="ev" style="color:#9d98c9;margin:6px 8px">College Tenant</div>
+    <div class="sw">
+      <button class="${S.c === 'A' ? 'on' : ''}" onclick="S.c='A';draw()">College A</button>
+      <button class="${S.c === 'B' ? 'on' : ''}" onclick="S.c='B';draw()">College B</button>
+    </div>
+  `;
+
+  // Render Top Header
+  $('#top').innerHTML = `
+    <div>
+      <h1>${T[S.p]}</h1>
+      <p class="sub">${{ s: 'Student Interface', r: 'Recruiter Workspace', u: 'University Administration', o: 'T&P Officer Intelligence' }[rl]} · College ${S.c}</p>
+    </div>
+    <div class="top-right">
+      ${S.apiConnected
+        ? '<span class="pill have" title="Connected to FastAPI backend and database">🟢 Live API</span>'
+        : '<span class="pill" style="background:#e8e4ff;color:#6c4cf0" title="Running with local offline demo fallback">⚡ Standalone</span>'}
+      <div class="who">
+        <span class="av">${{ s: 'R', r: 'A', u: 'U', o: 'T' }[rl]}</span>
+        <b>${{ s: 'Rahul K.', r: 'Acme Recruiter', u: 'University Admin', o: 'T&P Officer' }[rl]}</b>
+      </div>
+    </div>
+  `;
+
+  // Render View Content
+  $('#v').innerHTML = pages[S.p] ? pages[S.p]() : '<div>View not found</div>';
+}
+
+draw();
+</script>
+</body>
+</html>

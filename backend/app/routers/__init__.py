@@ -1,0 +1,11 @@
+from backend.app.routers.auth import router as auth_router
+from backend.app.routers.competencies import router as competencies_router
+from backend.app.routers.assessments import router as assessments_router
+from backend.app.routers.readiness import router as readiness_router
+from backend.app.routers.learning import router as learning_router
+from backend.app.routers.eligibility import router as eligibility_router
+from backend.app.routers.companies import router as companies_router
+from backend.app.routers.recruiter import router as recruiter_router
+from backend.app.routers.officer import router as officer_router
+from backend.app.routers.university import router as university_router
+from backend.app.routers.audit import router as audit_router

@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --mut: #64748b;
+  --line: #e2e8f0;
+  --pri: #2563eb;
+  --pri-hover: #1d4ed8;
+  --pt: #eff6ff;
+  --ok: #059669;
+  --okt: #ecfdf5;
+  --warn: #d97706;
+  --wt: #fffbeb;
+  --bad: #dc2626;
+  --bt: #fef2f2;
+  --blu: #0284c7;
+  --blt: #f0f9ff;
+  --side: #0f172a;
+  --side-active: #1e293b;
+  --side-text: #94a3b8;
+  --side-text-active: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b1120;
+    --card: #0f172a;
+    --ink: #f8fafc;
+    --mut: #94a3b8;
+    --line: #1e293b;
+    --pri: #3b82f6;
+    --pri-hover: #2563eb;
+    --pt: #172554;
+    --ok: #10b981;
+    --okt: #064e3b;
+    --warn: #f59e0b;
+    --wt: #451a03;
+    --bad: #f43f5e;
+    --bt: #4c0519;
+    --blu: #38bdf8;
+    --blt: #082f49;
+    --side: #050b14;
+    --side-active: #0f172a;
+    --side-text: #94a3b8;
+    --side-text-active: #f8fafc;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1120;
+  --card: #0f172a;
+  --ink: #f8fafc;
+  --mut: #94a3b8;
+  --line: #1e293b;
+  --pri: #3b82f6;
+  --pri-hover: #2563eb;
+  --pt: #172554;
+  --ok: #10b981;
+  --okt: #064e3b;
+  --warn: #f59e0b;
+  --wt: #451a03;
+  --bad: #f43f5e;
+  --bt: #4c0519;
+  --blu: #38bdf8;
+  --blt: #082f49;
+  --side: #050b14;
+  --side-active: #0f172a;
+  --side-text: #94a3b8;
+  --side-text-active: #f8fafc;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle clean scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mut);
+}
+
+/* Timeline vertical line */
+.tl {
+  border-left: 2px solid var(--line);
+  margin-left: 8px;
+  padding-left: 18px;
+}
+.tl div {
+  padding: 8px 0;
+  position: relative;
+}
+.tl div:before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--pri);
+  border: 2px solid var(--card);
+}
