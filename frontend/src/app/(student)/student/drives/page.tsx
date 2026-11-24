@@ -1,87 +1,91 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import StatCard from '@/components/ui/StatCard';
 import { useApp } from '@/context/AppContext';
 import { api } from '@/lib/api';
-import { Briefcase, ShieldCheck, CheckCircle2, AlertCircle, FileCheck, HelpCircle, Send } from 'lucide-react';
-
-const STATES = ['Claimed', 'Observed', 'Evidence-linked', 'Assessed', 'Verified'];
-
-interface DriveInfo {
-  id: string;
-  company: string;
-  role: string;
-  ctc: string;
-  deadline: string;
-  status: 'Not Eligible' | 'Eligible';
-  rules: { label: string; value: string; pass: boolean }[];
-}
+import { StudentDriveItem } from '@/types';
+import {
+  Briefcase,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  FileCheck,
+  HelpCircle,
+  Send,
+  Calendar,
+  Building2,
+  MapPin,
+  X,
+  FileText,
+  AlertTriangle,
+} from 'lucide-react';
 
 export default function StudentDrivesPage() {
-  const { skills, appealed, setAppealed, showToast, addTimelineItem } = useApp();
-  const isSqlVerified = skills.SQL === 4;
+  const { showToast, addTimelineItem } = useApp();
+  const [drives, setDrives] = useState<StudentDriveItem[]>([]);
+  const [selectedDriveId, setSelectedDriveId] = useState<string>('drive-acme');
+  const [loading, setLoading] = useState(true);
 
-  const [selectedDriveId, setSelectedDriveId] = useState('drive-acme');
+  // Appeal Modal
+  const [isAppealModalOpen, setIsAppealModalOpen] = useState(false);
+  const [appealReason, setAppealReason] = useState('');
+  const [isSubmittingAppeal, setIsSubmittingAppeal] = useState(false);
 
-  const DRIVES: DriveInfo[] = [
-    {
-      id: 'drive-acme',
-      company: 'Acme Tech',
-      role: 'Backend Systems Developer',
-      ctc: '₹14 LPA',
-      deadline: '2026-12-15',
-      status: 'Not Eligible',
-      rules: [
-        { label: 'CGPA ≥ 7.0', value: 'Student Value: 7.8', pass: true },
-        { label: 'Active Academic Backlogs = 0', value: 'Student Value: 1 Active Backlog (Maths III)', pass: false },
-        {
-          label: 'SQL Verified Competency',
-          value: `Student Value: ${STATES[skills.SQL || 0]}`,
-          pass: isSqlVerified,
-        },
-      ],
-    },
-    {
-      id: 'drive-gamma',
-      company: 'Gamma Labs',
-      role: 'Associate Software Engineer',
-      ctc: '₹11 LPA',
-      deadline: '2026-12-22',
-      status: 'Eligible',
-      rules: [
-        { label: 'CGPA ≥ 6.5', value: 'Student Value: 7.8', pass: true },
-        { label: 'Python or Git Evidence-Linked', value: `Student Value: Python (${STATES[skills.Python || 0]})`, pass: true },
-        { label: 'No Disciplinary Records', value: 'Clean Student Record', pass: true },
-      ],
-    },
-    {
-      id: 'drive-beta',
-      company: 'Beta Soft',
-      role: 'Cloud Operations Trainee',
-      ctc: '₹9.5 LPA',
-      deadline: '2026-12-28',
-      status: 'Eligible',
-      rules: [
-        { label: 'CGPA ≥ 6.0', value: 'Student Value: 7.8', pass: true },
-        { label: 'Git Competency Observed', value: `Student Value: Git (${STATES[skills.Git || 0]})`, pass: true },
-      ],
-    },
-  ];
-
-  const currentDrive = DRIVES.find((d) => d.id === selectedDriveId) || DRIVES[0];
-
-  const handleAppeal = async () => {
-    setAppealed(true);
-    addTimelineItem('Operations', 'Appeal Lodged', `Human appeal filed for ${currentDrive.company}`);
-    showToast(`Appeal registered with T&P Placement Officer for ${currentDrive.company}`);
-    await api.submitAppeal(
-      'decision-rahul-01',
-      'student-rahul-01',
-      'Backlog cleared in special exam; database credentials submitted for review.'
-    );
+  const loadDrives = async () => {
+    try {
+      const data = await api.getStudentDrives('student-rahul-01');
+      if (data && data.length > 0) {
+        setDrives(data);
+        if (!selectedDriveId || !data.some((d) => d.id === selectedDriveId)) {
+          setSelectedDriveId(data[0].id);
+        }
+      }
+    } catch (err) {
+      console.warn('Error loading drives:', err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadDrives();
+  }, []);
+
+  const currentDrive = drives.find((d) => d.id === selectedDriveId) || drives[0];
+
+  const handleApply = async (driveId: string, company: string) => {
+    try {
+      await api.applyToDrive('student-rahul-01', driveId);
+      showToast(`Application successfully submitted to ${company}!`);
+      await loadDrives();
+    } catch {
+      showToast('Error applying to placement drive');
+    }
+  };
+
+  const handleAppealSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appealReason.trim() || !currentDrive) return;
+
+    setIsSubmittingAppeal(true);
+    try {
+      await api.appealDriveDecision('student-rahul-01', currentDrive.id, appealReason.trim());
+      addTimelineItem('Operations', 'Appeal Lodged', `Human appeal filed for ${currentDrive.company_name}`);
+      showToast(`Appeal registered with T&P Placement Officer for ${currentDrive.company_name}`);
+      setIsAppealModalOpen(false);
+      setAppealReason('');
+      await loadDrives();
+    } catch {
+      showToast('Error submitting appeal');
+    } finally {
+      setIsSubmittingAppeal(false);
+    }
+  };
+
+  const eligibleCount = drives.filter((d) => d.eligible).length;
+  const appliedCount = drives.filter((d) => d.applied).length;
 
   return (
     <div className="space-y-6">
@@ -95,147 +99,268 @@ export default function StudentDrivesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Active Campus Drives"
-          value={DRIVES.length}
+          value={drives.length}
           icon={<Briefcase size={18} />}
           trend="Currently Scheduled"
           trendPositive={true}
-          subtitle="Tier-1 & Tier-2"
+          subtitle="Recruitment Season"
         />
         <StatCard
           label="Eligible Positions"
-          value={DRIVES.filter((d) => d.status === 'Eligible').length}
-          icon={<CheckCircle2 size={18} />}
-          trend="Direct Applications"
-          trendPositive={true}
-          subtitle="Criteria Fully Met"
-        />
-        <StatCard
-          label="Deterministic Auditing"
-          value="v3.2 Rules"
+          value={eligibleCount}
           icon={<ShieldCheck size={18} />}
-          trend="Versioned Engine"
-          trendPositive={true}
-          subtitle="Snapshot Enforced"
+          trend={`${eligibleCount}/${drives.length} Qualified`}
+          trendPositive={eligibleCount > 0}
+          subtitle="Criteria Verified"
         />
         <StatCard
-          label="Human Appeals Queue"
-          value={appealed ? '1 Under Review' : '0 Pending'}
+          label="Applications Submitted"
+          value={appliedCount}
+          icon={<FileCheck size={18} />}
+          trend={appliedCount > 0 ? 'Active in Pipeline' : 'Pending Action'}
+          trendPositive={appliedCount > 0}
+          subtitle="Drive Submissions"
+        />
+        <StatCard
+          label="Human Appeal Right"
+          value="GUARANTEED"
           icon={<HelpCircle size={18} />}
-          trend={appealed ? 'T&P Officer Reviewing' : 'No Active Disputes'}
-          trendPositive={!appealed}
-          subtitle="Non-Automated"
+          trend="DPDP Compliant"
+          trendPositive={true}
+          subtitle="Zero Auto-Rejections"
         />
       </div>
 
-      {/* Drive Selectors */}
-      <div className="flex gap-2 border-b border-line pb-3 overflow-x-auto">
-        {DRIVES.map((d) => (
-          <button
-            key={d.id}
-            type="button"
-            onClick={() => setSelectedDriveId(d.id)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              selectedDriveId === d.id
-                ? 'bg-pri text-white shadow-sm'
-                : 'bg-card border border-line text-mut hover:text-ink'
-            }`}
-          >
-            {d.company} · {d.role}
-          </button>
-        ))}
-      </div>
-
-      {/* Drive Details Card */}
-      <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-w-3xl">
-        <div className="flex justify-between items-start flex-wrap gap-4 border-b border-line pb-5">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-ink">{currentDrive.company}</h2>
-              <span className="text-xs font-bold text-pri bg-pri/10 px-2 py-0.5 rounded-md">
-                {currentDrive.ctc}
-              </span>
-            </div>
-            <p className="text-xs text-mut font-medium">
-              Role: {currentDrive.role} · Application Deadline: {currentDrive.deadline}
-            </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Drive Selection List */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold text-ink uppercase tracking-wider">Scheduled Drives</h2>
+            <span className="text-[11px] text-mut">{drives.length} Companies</span>
           </div>
 
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${
-              currentDrive.status === 'Eligible'
-                ? 'bg-okt text-ok border border-ok/20'
-                : 'bg-bt text-bad border border-bad/20'
-            }`}
-          >
-            {currentDrive.status}
-          </span>
+          <div className="space-y-2.5">
+            {drives.map((d) => {
+              const isSelected = d.id === selectedDriveId;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setSelectedDriveId(d.id)}
+                  className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-card border-pri shadow-sm'
+                      : 'bg-card border-line hover:border-line/80'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="space-y-0.5">
+                      <b className="text-sm font-bold text-ink block">{d.company_name}</b>
+                      <p className="text-xs text-mut">{d.role}</p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                        d.eligible
+                          ? 'bg-okt text-ok border border-ok/20'
+                          : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                      }`}
+                    >
+                      {d.eligible ? 'Eligible' : 'Prereq Gap'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-line mt-3 text-xs text-mut">
+                    <span className="font-bold text-ink">{d.package_ctc}</span>
+                    <span className="flex items-center gap-1 font-mono text-[11px]">
+                      <Calendar size={12} /> {d.drive_date}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Evaluation Criteria Checklist */}
-        <div className="space-y-3">
-          <span className="text-xs font-bold text-ink uppercase tracking-wider block">
-            Eligibility Evaluation Parameters (Versioned Rules v3):
-          </span>
-          {currentDrive.rules.map((r, i) => (
-            <div
-              key={i}
-              className="flex gap-3.5 items-center p-4 rounded-xl bg-bg border border-line"
-            >
-              <span
-                className={`w-7 h-7 rounded-full grid place-items-center text-xs font-bold shrink-0 ${
-                  r.pass ? 'bg-okt text-ok border border-ok/20' : 'bg-bt text-bad border border-bad/20'
-                }`}
-              >
-                {r.pass ? '✓' : '✕'}
-              </span>
-              <div className="space-y-0.5">
-                <b className="text-xs font-bold text-ink block">{r.label}</b>
-                <span className="text-[11px] text-mut">{r.value}</span>
+        {/* Selected Drive Detail & Adjudication Panel */}
+        <div className="lg:col-span-2 space-y-6">
+          {currentDrive ? (
+            <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              {/* Drive Details Header */}
+              <div className="border-b border-line pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-ink">{currentDrive.company_name}</h2>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                        currentDrive.eligible
+                          ? 'bg-okt text-ok border border-ok/20'
+                          : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                      }`}
+                    >
+                      {currentDrive.eligible ? 'Eligible for Drive' : 'Criteria Gap Detected'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-mut font-medium">{currentDrive.role} · {currentDrive.location}</p>
+                  <div className="flex items-center gap-4 text-xs font-semibold text-ink pt-1">
+                    <span>Package: <b className="text-pri">{currentDrive.package_ctc}</b></span>
+                    <span>•</span>
+                    <span>Date: <b className="font-mono">{currentDrive.drive_date}</b></span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {currentDrive.eligible ? (
+                    <button
+                      type="button"
+                      disabled={currentDrive.applied}
+                      onClick={() => handleApply(currentDrive.id, currentDrive.company_name)}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        currentDrive.applied
+                          ? 'bg-okt text-ok border border-ok/20 cursor-default'
+                          : 'bg-pri text-white shadow-xs hover:opacity-95 cursor-pointer'
+                      }`}
+                    >
+                      {currentDrive.applied ? 'Application Submitted ✓' : 'Submit Application'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsAppealModalOpen(true)}
+                      className="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 text-white shadow-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <HelpCircle size={14} />
+                      {currentDrive.appeal_status ? 'Appeal Pending Review' : 'Lodge Human Appeal'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Required Skills Matrix */}
+              <div className="space-y-2.5">
+                <h3 className="text-xs font-bold text-ink uppercase tracking-wider">
+                  Mandatory Competency Prerequisites
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {currentDrive.required_skills.map((sk) => (
+                    <span
+                      key={sk}
+                      className="px-3 py-1.5 rounded-xl bg-bg border border-line text-xs font-semibold text-ink"
+                    >
+                      {sk}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Transparent Eligibility Audit Criteria */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-ink uppercase tracking-wider">
+                  Deterministic Eligibility Audit Results
+                </h3>
+
+                <div className="space-y-2">
+                  {currentDrive.eligibility_reasons.passed_criteria.map((crit, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-xl bg-bg border border-ok/20 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={16} className="text-ok shrink-0" />
+                        <span className="font-semibold text-ink">{crit}</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-ok uppercase">Passed</span>
+                    </div>
+                  ))}
+
+                  {currentDrive.eligibility_reasons.failed_criteria.map((crit, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-xl bg-bg border border-rose-500/20 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={16} className="text-rose-500 shrink-0" />
+                        <span className="font-semibold text-ink">{crit}</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-rose-600 uppercase">Failed Criteria</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Human Appeal Rights Assurance */}
+              <div className="p-4 rounded-xl bg-bg border border-line text-xs text-mut space-y-1">
+                <b className="text-ink flex items-center gap-1.5">
+                  <ShieldCheck size={14} className="text-ok" />
+                  Statutory Right to Human Adjudication
+                </b>
+                <p className="leading-relaxed">
+                  Students disqualified by automated rules can file an appeal with the institutional Training & Placement Officer. ProofHire strictly prohibits irreversible black-box exclusions.
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Appeal or Apply Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-line">
-          <p className="text-xs text-mut max-w-md leading-relaxed">
-            AI never issues automated rejections. Input values and rule versions are permanently snapshotted for human-in-the-loop audit.
-          </p>
-
-          {currentDrive.status === 'Eligible' ? (
-            <button
-              type="button"
-              onClick={() => showToast(`Application submitted for ${currentDrive.company}`)}
-              className="bg-pri text-white font-bold text-xs px-5 py-3 rounded-xl shadow-sm hover:opacity-95 transition-opacity shrink-0 cursor-pointer"
-            >
-              Submit Application Dossier
-            </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleAppeal}
-              disabled={appealed}
-              className={`text-xs font-bold px-5 py-3 rounded-xl transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-                appealed
-                  ? 'bg-line text-mut cursor-default'
-                  : 'bg-pri text-white shadow-sm hover:opacity-95'
-              }`}
-            >
-              {appealed ? (
-                <>
-                  <CheckCircle2 size={14} className="text-ok" />
-                  Appeal Lodged with Placement Officer
-                </>
-              ) : (
-                <>
-                  <Send size={13} />
-                  Submit Human Appeal to T&P Officer
-                </>
-              )}
-            </button>
+            <div className="text-center py-16 text-xs text-mut italic bg-card border border-line rounded-3xl">
+              Select a campus placement drive to review requirements and eligibility.
+            </div>
           )}
         </div>
       </div>
+
+      {/* Appeal Submission Modal */}
+      {isAppealModalOpen && currentDrive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-line pb-4">
+              <div>
+                <h3 className="text-base font-bold text-ink">Lodge Placement Appeal</h3>
+                <p className="text-xs text-mut mt-0.5">Appealing eligibility for {currentDrive.company_name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAppealModalOpen(false)}
+                className="p-1 rounded-lg text-mut hover:text-ink hover:bg-bg"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAppealSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-ink">Appeal Ground / Rectification Details</label>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="Explain cleared academic backlogs, newly verified competencies, or documentation errors for the Placement Officer to review..."
+                  value={appealReason}
+                  onChange={(e) => setAppealReason(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-line text-ink text-xs focus:outline-hidden focus:border-pri"
+                />
+              </div>
+
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-800 dark:text-amber-300">
+                <b>Institutional Protocol:</b> Your appeal will be routed to the T&P Placement Officer for review. A formal determination will be logged in the immutable audit ledger.
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAppealModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-mut hover:text-ink hover:bg-bg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingAppeal || !appealReason.trim()}
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-pri text-white shadow-xs hover:opacity-95 disabled:opacity-50"
+                >
+                  {isSubmittingAppeal ? 'Filing Appeal...' : 'Submit Appeal'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

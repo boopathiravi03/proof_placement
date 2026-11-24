@@ -123,12 +123,15 @@ def seed_database():
         db.add(student_rahul)
         db.flush()
 
-        # Rahul's initial competencies
+        # Rahul's initial competencies across 6 distinct categories
         skills_rahul = [
-            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Python", state="claimed", confidence=0.5),
-            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="SQL", state="claimed", confidence=0.5),
-            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Git", state="claimed", confidence=0.5),
-            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Docker", state="claimed", confidence=0.4)
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Python", category="languages", proficiency="Intermediate", state="claimed", confidence=0.5),
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="FastAPI", category="frameworks", proficiency="Intermediate", state="claimed", confidence=0.45),
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="SQL", category="databases", proficiency="Intermediate", state="claimed", confidence=0.5),
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Data Structures & Algorithms", category="fundamentals", proficiency="Intermediate", state="claimed", confidence=0.55),
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Git", category="tools", proficiency="Intermediate", state="claimed", confidence=0.5),
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Docker", category="tools", proficiency="Beginner", state="claimed", confidence=0.4),
+            Competency(student_id=student_rahul.id, college_id="COLLEGE-A", skill_name="Technical Communication", category="soft_skills", proficiency="Advanced", state="claimed", confidence=0.6)
         ]
         db.add_all(skills_rahul)
         db.flush()

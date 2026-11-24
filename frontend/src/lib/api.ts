@@ -12,6 +12,13 @@ import {
   UniversityCollege,
   AuditResponse,
   EvidenceItem,
+  StudentDashboardSummary,
+  CategorizedSkill,
+  MentorVerificationRequestItem,
+  GitHubRepoItem,
+  StudentPrivacyResponse,
+  StudentDriveItem,
+  ResumeDataResponse,
 } from '@/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -61,6 +68,26 @@ class ApiClient {
     return this.request(`/competencies/student/${studentId}`);
   }
 
+  async getStudentDashboardSummary(studentId = 'student-rahul-01'): Promise<StudentDashboardSummary | null> {
+    return this.request(`/student/${studentId}/dashboard-summary`);
+  }
+
+  async getCompetencyCategories(studentId = 'student-rahul-01'): Promise<{ student_id: string; categories: Record<string, CategorizedSkill[]> } | null> {
+    return this.request(`/competencies/student/${studentId}/categories`);
+  }
+
+  async claimSkill(payload: {
+    student_id: string;
+    skill_name: string;
+    category?: string;
+    proficiency?: string;
+  }) {
+    return this.request('/competencies/claim', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async getStudentEvidence(studentId = 'student-rahul-01'): Promise<EvidenceItem[] | null> {
     return this.request(`/competencies/student/${studentId}/evidence`);
   }
@@ -74,6 +101,41 @@ class ApiClient {
     confidence?: number;
   }) {
     return this.request('/competencies/evidence', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteEvidence(evidenceId: string, studentId = 'student-rahul-01') {
+    return this.request(`/competencies/evidence/${evidenceId}?student_id=${studentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async createMentorVerificationRequest(payload: {
+    student_id: string;
+    skill_name: string;
+    mentor_name: string;
+    evidence_summary: string;
+    walkthrough_notes?: string;
+  }) {
+    return this.request('/competencies/mentor/request', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getMentorVerificationRequests(studentId = 'student-rahul-01'): Promise<MentorVerificationRequestItem[] | null> {
+    return this.request(`/competencies/mentor/requests/${studentId}`);
+  }
+
+  async adjudicateMentorRequest(payload: {
+    request_id: string;
+    mentor_name: string;
+    approved: boolean;
+    notes?: string;
+  }) {
+    return this.request('/competencies/mentor/adjudicate', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -97,9 +159,56 @@ class ApiClient {
     });
   }
 
+  async getGitHubRepositories(studentId = 'student-rahul-01'): Promise<GitHubRepoItem[] | null> {
+    return this.request(`/competencies/github/repositories/${studentId}`);
+  }
+
   async revokeGitHub(studentId = 'student-rahul-01') {
     return this.request(`/competencies/github/revoke?student_id=${studentId}`, {
       method: 'POST',
+    });
+  }
+
+  // Student Privacy & DPDP
+  async getStudentPrivacy(studentId = 'student-rahul-01'): Promise<StudentPrivacyResponse | null> {
+    return this.request(`/student/${studentId}/privacy`);
+  }
+
+  async updateStudentConsent(studentId = 'student-rahul-01', purpose: string, granted: boolean) {
+    return this.request(`/student/${studentId}/consent`, {
+      method: 'POST',
+      body: JSON.stringify({ purpose, granted }),
+    });
+  }
+
+  // Student Resume Generator
+  async getResumeData(studentId = 'student-rahul-01'): Promise<ResumeDataResponse | null> {
+    return this.request(`/student/${studentId}/resume-data`);
+  }
+
+  async saveResumeSnapshot(studentId = 'student-rahul-01', templateName = 'Modern Tech', title = 'Software Engineering Resume') {
+    return this.request(`/student/${studentId}/resume/save`, {
+      method: 'POST',
+      body: JSON.stringify({ template_name: templateName, title }),
+    });
+  }
+
+  // Student Placement Drives
+  async getStudentDrives(studentId = 'student-rahul-01'): Promise<StudentDriveItem[] | null> {
+    return this.request(`/student/${studentId}/drives`);
+  }
+
+  async applyToDrive(studentId = 'student-rahul-01', driveId: string) {
+    return this.request(`/student/${studentId}/drives/apply`, {
+      method: 'POST',
+      body: JSON.stringify({ student_id: studentId, drive_id: driveId }),
+    });
+  }
+
+  async appealDriveDecision(studentId = 'student-rahul-01', driveId: string, reason: string) {
+    return this.request(`/student/${studentId}/drives/appeal`, {
+      method: 'POST',
+      body: JSON.stringify({ student_id: studentId, drive_id: driveId, reason }),
     });
   }
 

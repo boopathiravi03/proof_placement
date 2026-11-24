@@ -212,3 +212,169 @@ export interface AuditResponse {
   total_records: number;
   entries: AuditLogEntry[];
 }
+
+// Phase 3 Student Engine Types
+export type SkillCategory = 'languages' | 'frameworks' | 'databases' | 'fundamentals' | 'tools' | 'soft_skills';
+
+export interface CategorizedSkill {
+  id: string;
+  skill_name: string;
+  category: string;
+  proficiency: string;
+  state: CompetencyState | string;
+  confidence: number;
+  verified_by?: string | null;
+  verification_method?: string | null;
+  last_assessed_at?: string | null;
+  verified_at?: string | null;
+  expires_at?: string | null;
+  evidence_count: number;
+}
+
+export interface MentorVerificationRequestItem {
+  id: string;
+  student_id: string;
+  competency_id: string;
+  skill_name: string;
+  mentor_name: string;
+  evidence_summary: string;
+  walkthrough_notes?: string | null;
+  status: 'pending' | 'approved' | 'rejected' | string;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  notes?: string | null;
+  expires_at?: string | null;
+  created_at: string;
+}
+
+export interface GitHubRepoItem {
+  id: string;
+  name: string;
+  url: string;
+  description?: string;
+  primary_language?: string;
+  languages?: Record<string, number>;
+  commits: number;
+  stars: number;
+  is_authorized: boolean;
+  last_scanned_at?: string;
+}
+
+export interface StudentDashboardSummary {
+  student: {
+    id: string;
+    name: string;
+    roll_number: string;
+    branch: string;
+    college_id: string;
+    cgpa: number;
+    backlogs: number;
+    github_username?: string;
+    github_connected: boolean;
+    profile_completion_percentage: number;
+  };
+  metrics: {
+    overall_readiness: number;
+    verified_skill_count: number;
+    evidence_linked_count: number;
+    skills_needing_assessment: number;
+    active_learning_tasks: number;
+    upcoming_placement_drives: number;
+    recent_assessments_count: number;
+  };
+  readiness_breakdown: {
+    technical_competency: { score: number; explanation: string };
+    aptitude_performance: { score: number; explanation: string };
+    coding_performance: { score: number; explanation: string };
+    interview_readiness: { score: number; explanation: string };
+    evidence_coverage: { score: number; explanation: string };
+  };
+  active_tasks: Array<{
+    id: string;
+    title: string;
+    skill: string;
+    description: string;
+    completed: boolean;
+  }>;
+  upcoming_drives: Array<{
+    id: string;
+    company_name: string;
+    role: string;
+    package_ctc: string;
+    drive_date: string;
+    required_skills: string[];
+    is_eligible: boolean;
+  }>;
+  recent_assessments: Array<{
+    id: string;
+    category: string;
+    score: number;
+    total: number;
+    percentage: number;
+    date: string;
+  }>;
+  recommended_actions: string[];
+}
+
+export interface PrivacyConsentItem {
+  purpose: string;
+  title: string;
+  description: string;
+  legal_basis: string;
+  granted: boolean;
+  granted_at?: string;
+  revoked_at?: string | null;
+}
+
+export interface StudentPrivacyResponse {
+  student_id: string;
+  dpdp_compliance_notice: string;
+  consents: PrivacyConsentItem[];
+  github_consent_revoked: boolean;
+  data_protection_rights: {
+    right_to_access: boolean;
+    right_to_correction: boolean;
+    right_to_erasure: boolean;
+    right_to_grievance_redressal: boolean;
+  };
+}
+
+export interface StudentDriveItem {
+  id: string;
+  company_name: string;
+  role: string;
+  package_ctc: string;
+  drive_date: string;
+  location: string;
+  min_cgpa: number;
+  max_backlogs: number;
+  required_skills: string[];
+  eligible: boolean;
+  eligibility_reasons: {
+    passed_criteria: string[];
+    failed_criteria: string[];
+  };
+  can_appeal: boolean;
+  applied: boolean;
+  appeal_status?: string | null;
+}
+
+export interface ResumeDataResponse {
+  student: {
+    name: string;
+    roll_number: string;
+    branch: string;
+    college_id: string;
+    cgpa: number;
+    github_username?: string;
+  };
+  competencies: {
+    verified: Array<{ skill_name: string; proficiency: string; verification_method: string; verified_by?: string; verified_at?: string }>;
+    assessed: Array<{ skill_name: string; proficiency: string }>;
+    evidence_linked: Array<{ skill_name: string; proficiency: string; evidence_count: number }>;
+    claimed: Array<{ skill_name: string; proficiency: string }>;
+  };
+  projects: Array<{ title: string; repo_url: string; tech: string; description: string }>;
+  certifications: Array<{ title: string; issuer: string; date: string }>;
+  education: Array<{ degree: string; institution: string; score: string; year: string }>;
+}

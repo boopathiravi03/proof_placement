@@ -59,6 +59,7 @@ const CANDIDATES: Candidate[] = [
     certHash: '4a1c9e8b7f0d3e21',
   },
   {
+    
     id: 'c-3',
     name: 'Karthik M.',
     branch: 'IT',

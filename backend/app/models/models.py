@@ -70,10 +70,14 @@ class Competency(Base):
     student_id = Column(String(36), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     taxonomy_code = Column(String(50), nullable=True)
     skill_name = Column(String(100), nullable=False)
+    category = Column(String(50), default="languages")  # languages, frameworks, databases, fundamentals, tools, soft_skills
+    proficiency = Column(String(30), default="Intermediate")  # Beginner, Intermediate, Advanced, Expert
     state = Column(String(30), nullable=False, default="claimed")  # claimed, observed, evidence_linked, assessed, verified, expired
     confidence = Column(Float, default=0.50)
     verified_by = Column(String(150), nullable=True)
     verification_method = Column(String(100), nullable=True)
+    last_assessed_at = Column(DateTime, nullable=True)
+    verified_at = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -283,3 +287,50 @@ class AuditLogEntry(Base):
     prev_hash = Column(String(64), nullable=False)
     hash = Column(String(64), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class MentorVerificationRequest(Base):
+    __tablename__ = "mentor_verification_requests"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    college_id = Column(String(36), nullable=False)
+    student_id = Column(String(36), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    competency_id = Column(String(36), ForeignKey("competencies.id", ondelete="CASCADE"), nullable=False)
+    skill_name = Column(String(100), nullable=False)
+    mentor_name = Column(String(150), nullable=False)
+    mentor_email = Column(String(150), nullable=True)
+    evidence_summary = Column(Text, nullable=False)
+    walkthrough_notes = Column(Text, nullable=True)
+    status = Column(String(30), default="pending")  # pending, approved, rejected
+    rejection_reason = Column(Text, nullable=True)
+    reviewed_by = Column(String(150), nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class ResumeRecord(Base):
+    __tablename__ = "resume_records"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    college_id = Column(String(36), nullable=False)
+    student_id = Column(String(36), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    template_name = Column(String(50), default="modern_enterprise")
+    title = Column(String(150), default="Evidence-Backed Placement CV")
+    verified_skills = Column(JSON, default=list)
+    projects = Column(JSON, default=list)
+    certifications = Column(JSON, default=list)
+    education = Column(JSON, default=dict)
+    generated_at = Column(DateTime, default=datetime.utcnow)
+
+class GitHubRepository(Base):
+    __tablename__ = "github_repositories"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    student_id = Column(String(36), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    repo_name = Column(String(150), nullable=False)
+    repo_url = Column(String(500), nullable=False)
+    description = Column(Text, nullable=True)
+    primary_language = Column(String(50), nullable=True)
+    languages = Column(JSON, default=dict)
+    commit_count = Column(Integer, default=0)
+    stars = Column(Integer, default=0)
+    is_authorized = Column(Boolean, default=True)
+    last_scanned_at = Column(DateTime, default=datetime.utcnow)

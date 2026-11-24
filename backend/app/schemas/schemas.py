@@ -158,3 +158,44 @@ class AuditVerificationResponse(BaseModel):
     college_id: str
     total_entries: int
     entries: List[AuditEntryDTO]
+
+# --- Phase 3 Student Dashboard & Evidence Intelligence Schemas ---
+class ClaimSkillRequest(BaseModel):
+    student_id: str
+    skill_name: str
+    category: str = "languages"  # languages, frameworks, databases, fundamentals, tools, soft_skills
+    proficiency: Optional[str] = "Intermediate"
+
+class MentorVerificationRequestCreate(BaseModel):
+    student_id: str
+    skill_name: str
+    mentor_name: str
+    mentor_email: Optional[str] = None
+    evidence_summary: str
+    walkthrough_notes: Optional[str] = None
+
+class MentorVerificationAdjudicate(BaseModel):
+    request_id: str
+    mentor_name: str
+    approved: bool
+    rejection_reason: Optional[str] = None
+    notes: Optional[str] = None
+
+class ConsentUpdate(BaseModel):
+    student_id: str
+    purpose: str  # github_sync, leetcode_sync, recruiter_sharing
+    granted: bool
+
+class ResumeSaveRequest(BaseModel):
+    student_id: str
+    template_name: str = "modern_enterprise"
+    title: Optional[str] = "Evidence-Backed Placement CV"
+
+class DriveApplyRequest(BaseModel):
+    drive_id: str
+    student_id: str
+
+class DriveAppealSubmit(BaseModel):
+    drive_id: str
+    student_id: str
+    reason: str

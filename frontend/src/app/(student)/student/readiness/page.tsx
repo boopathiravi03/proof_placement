@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import ProgressBar from '@/components/ui/ProgressBar';
 import StatCard from '@/components/ui/StatCard';
 import ReadinessRing from '@/components/ui/ReadinessRing';
 import { useApp } from '@/context/AppContext';
+import { api } from '@/lib/api';
+import { ReadinessScore } from '@/types';
 import { Award, ShieldCheck, CheckCircle2, TrendingUp, AlertCircle, FileCheck, Layers } from 'lucide-react';
 
 const ROLE_REQUIREMENTS: Record<string, string[]> = {
@@ -16,30 +18,44 @@ const ROLE_REQUIREMENTS: Record<string, string[]> = {
 
 export default function ReadinessPage() {
   const [selectedRole, setSelectedRole] = useState<'Backend' | 'Data Analyst' | 'Frontend'>('Backend');
+  const [apiReadiness, setApiReadiness] = useState<ReadinessScore | null>(null);
   const { skills, mockTestPassed } = useApp();
 
+  useEffect(() => {
+    async function fetchReadiness() {
+      try {
+        const res = await api.getReadiness('student-rahul-01', selectedRole);
+        if (res) setApiReadiness(res);
+      } catch (err) {
+        console.warn('Fallback to reactive calculation:', err);
+      }
+    }
+    fetchReadiness();
+  }, [selectedRole]);
+
   const req = ROLE_REQUIREMENTS[selectedRole] || ROLE_REQUIREMENTS.Backend;
-  const cov = Math.round((100 * req.filter((n) => (skills[n] || 0) >= 2).length) / req.length);
-  const ver = Math.round((100 * req.filter((n) => skills[n] === 4).length) / req.length);
-  const pa = skills.SQL >= 3 || mockTestPassed ? (skills.SQL === 4 ? 80 : 60) : 0;
-  const apt = skills.SQL >= 3 || mockTestPassed ? 70 : 0;
-  const iv = skills.SQL >= 3 || mockTestPassed ? 55 : 0;
+  const cov = apiReadiness?.breakdown.evidence_coverage.percentage ?? Math.round((100 * req.filter((n) => (skills[n] || 0) >= 2).length) / req.length);
+  const ver = apiReadiness?.breakdown.verified_competencies.percentage ?? Math.round((100 * req.filter((n) => skills[n] === 4).length) / req.length);
+  const pa = apiReadiness?.breakdown.practical_assessment.percentage ?? (skills.SQL >= 3 || mockTestPassed ? (skills.SQL === 4 ? 80 : 60) : 0);
+  const apt = apiReadiness?.breakdown.aptitude.percentage ?? (skills.SQL >= 3 || mockTestPassed ? 70 : 0);
+  const iv = apiReadiness?.breakdown.interview_readiness.percentage ?? (skills.SQL >= 3 || mockTestPassed ? 55 : 0);
 
   const factors = [
-    { label: 'Verified Competencies', score: ver, weight: 35, desc: 'Proctored exams and faculty sign-offs' },
-    { label: 'Evidence Coverage', score: cov, weight: 20, desc: 'Code repositories and commits linked' },
-    { label: 'Practical Machine Assessment', score: pa, weight: 25, desc: 'Live SQL query sandbox & algorithmic tests' },
-    { label: 'Technical Aptitude Benchmark', score: apt, weight: 10, desc: 'Logic, data structures, and problem-solving' },
-    { label: 'Interview Communication Readiness', score: iv, weight: 10, desc: 'Rubric score from mock evaluations' },
+    { label: 'Verified Competencies', score: ver, weight: 35, desc: apiReadiness?.breakdown.verified_competencies.description || 'Proctored exams and faculty sign-offs' },
+    { label: 'Evidence Coverage', score: cov, weight: 20, desc: apiReadiness?.breakdown.evidence_coverage.description || 'Code repositories and commits linked' },
+    { label: 'Practical Machine Assessment', score: pa, weight: 25, desc: apiReadiness?.breakdown.practical_assessment.description || 'Live SQL query sandbox & algorithmic tests' },
+    { label: 'Technical Aptitude Benchmark', score: apt, weight: 10, desc: apiReadiness?.breakdown.aptitude.description || 'Logic, data structures, and problem-solving' },
+    { label: 'Interview Communication Readiness', score: iv, weight: 10, desc: apiReadiness?.breakdown.interview_readiness.description || 'Rubric score from mock evaluations' },
   ];
 
-  const totalScore = Math.round(factors.reduce((acc, f) => acc + (f.score * f.weight) / 100, 0));
-  const confidence =
-    ver >= 50 && (skills.SQL >= 3 || mockTestPassed)
-      ? 'High'
-      : skills.SQL >= 3 || mockTestPassed
-      ? 'Medium'
-      : 'Low';
+  const totalScore = apiReadiness?.overall_score ?? Math.round(factors.reduce((acc, f) => acc + (f.score * f.weight) / 100, 0));
+  const confidence = apiReadiness?.confidence_level
+    ? apiReadiness.confidence_level.charAt(0).toUpperCase() + apiReadiness.confidence_level.slice(1)
+    : ver >= 50 && (skills.SQL >= 3 || mockTestPassed)
+    ? 'High'
+    : skills.SQL >= 3 || mockTestPassed
+    ? 'Medium'
+    : 'Low';
 
   return (
     <div className="space-y-6">

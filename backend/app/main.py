@@ -19,7 +19,8 @@ from backend.app.routers import (
     recruiter_router,
     officer_router,
     university_router,
-    audit_router
+    audit_router,
+    student_router
 )
 from backend.app.services.competency_service import CompetencyService
 from backend.app.services.eligibility_service import EligibilityService
@@ -58,6 +59,7 @@ app.include_router(recruiter_router, prefix="/api")
 app.include_router(officer_router, prefix="/api")
 app.include_router(university_router, prefix="/api")
 app.include_router(audit_router, prefix="/api")
+app.include_router(student_router, prefix="/api")
 
 @app.get("/api/health")
 def api_health():

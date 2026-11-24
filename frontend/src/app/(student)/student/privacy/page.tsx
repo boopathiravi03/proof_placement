@@ -1,38 +1,75 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import StatCard from '@/components/ui/StatCard';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { useApp } from '@/context/AppContext';
 import { api } from '@/lib/api';
-import { ShieldCheck, Lock, Eye, GitBranch, CheckCircle2, AlertTriangle, FileText, Key } from 'lucide-react';
+import { StudentPrivacyResponse, PrivacyConsentItem } from '@/types';
+import {
+  ShieldCheck,
+  Lock,
+  Eye,
+  GitBranch,
+  CheckCircle2,
+  AlertTriangle,
+  FileText,
+  Key,
+  Scale,
+  UserX,
+  FileSpreadsheet,
+  HelpCircle,
+} from 'lucide-react';
 
 export default function PrivacyPage() {
-  const { privacy, setPrivacy, githubConnected, setGithubConnected, showToast } = useApp();
+  const { githubConnected, setGithubConnected, showToast } = useApp();
+  const [privacyData, setPrivacyData] = useState<StudentPrivacyResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const toggleOption = (key: 'lc' | 'rec') => {
-    const updated = { ...privacy, [key]: !privacy[key] };
-    setPrivacy(updated);
-    showToast(`Consent directive updated: ${key.toUpperCase()} = ${updated[key] ? 'Active' : 'Disabled'}`);
+  const loadPrivacy = async () => {
+    try {
+      const data = await api.getStudentPrivacy('student-rahul-01');
+      if (data) setPrivacyData(data);
+    } catch (err) {
+      console.warn('Error loading privacy data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPrivacy();
+  }, []);
+
+  const handleToggleConsent = async (purpose: string, currentGranted: boolean) => {
+    try {
+      const nextGranted = !currentGranted;
+      await api.updateStudentConsent('student-rahul-01', purpose, nextGranted);
+      showToast(`Consent directive updated for '${purpose}': ${nextGranted ? 'Granted' : 'Revoked'}`);
+      await loadPrivacy();
+    } catch {
+      showToast('Error updating consent directive');
+    }
   };
 
   const handleRevokeGitHub = async () => {
-    setGithubConnected(false);
-    showToast('GitHub OAuth tokens revoked pursuant to Digital Personal Data Protection (DPDP) Act.');
-    await api.revokeGitHub('student-rahul-01');
+    try {
+      await api.revokeGitHub('student-rahul-01');
+      setGithubConnected(false);
+      showToast('GitHub OAuth tokens revoked pursuant to Digital Personal Data Protection (DPDP) Act.');
+      await loadPrivacy();
+    } catch {
+      showToast('Error revoking GitHub access');
+    }
   };
 
-  const explainabilityFactors = [
-    { label: 'Adaptive SQL Machine Assessment (17/20)', pct: 60, desc: 'Proctored algorithmic diagnostic score' },
-    { label: 'Python Backend Repositories (41 Commits)', pct: 25, desc: 'Public commit frequency & consistency' },
-    { label: 'DBMS Laboratory Evaluation (9/10)', pct: 15, desc: 'Institutional coursework benchmark' },
-  ];
+  const activeConsentCount = (privacyData?.consents || []).filter((c) => c.granted).length;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Privacy & DPDP Governance Console"
+        title="Privacy & DPDP Statutory Governance Console"
         description="Granular student consent controls compliant with the Indian Digital Personal Data Protection (DPDP) Act 2023. Revoke access or withdraw permissions anytime."
         breadcrumbs={[{ label: 'Student', href: '/student/dashboard' }, { label: 'Privacy & DPDP' }]}
       />
@@ -43,13 +80,13 @@ export default function PrivacyPage() {
           label="DPDP Statutory Compliance"
           value="ENFORCED"
           icon={<ShieldCheck size={18} />}
-          trend="Indian DPDP 2023"
+          trend="Indian DPDP Act 2023"
           trendPositive={true}
           subtitle="Consent-Gated Platform"
         />
         <StatCard
           label="Active Consent Directives"
-          value={(privacy.lc ? 1 : 0) + (privacy.rec ? 1 : 0) + (githubConnected ? 1 : 0)}
+          value={activeConsentCount}
           icon={<Key size={18} />}
           trend="Revocable Anytime"
           trendPositive={true}
@@ -57,140 +94,132 @@ export default function PrivacyPage() {
         />
         <StatCard
           label="GitHub OAuth Scope"
-          value={githubConnected ? 'Read-Only' : 'Disconnected'}
+          value={privacyData?.github_consent_revoked ? 'Revoked' : 'Read-Only'}
           icon={<GitBranch size={18} />}
-          trend={githubConnected ? 'Public Activity' : 'Zero Access'}
-          trendPositive={true}
+          trend={privacyData?.github_consent_revoked ? 'Zero Access' : 'Public Repos'}
+          trendPositive={!privacyData?.github_consent_revoked}
           subtitle="Zero Write Access"
         />
         <StatCard
-          label="Explainable AI Audited"
+          label="Explainable AI Telemetry"
           value="100%"
           icon={<Eye size={18} />}
           trend="Zero Black Box"
           trendPositive={true}
-          subtitle="Deterministic Factors"
+          subtitle="Auditable Calculations"
         />
+      </div>
+
+      {/* DPDP Act 2023 Statutory Compliance Notice */}
+      <div className="bg-card border border-line rounded-2xl p-6 shadow-sm space-y-3">
+        <div className="flex items-center gap-2.5 text-pri font-bold text-sm">
+          <Scale size={18} />
+          <span>Digital Personal Data Protection (DPDP) Act 2023 Notice</span>
+        </div>
+        <p className="text-xs text-mut leading-relaxed">
+          {privacyData?.dpdp_compliance_notice ||
+            'ProofHire processes student information strictly as a Data Fiduciary pursuant to the Digital Personal Data Protection Act 2023. Data collection is purpose-limited to placement readiness analysis, competency verification, and recruiter discovery.'}
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-line text-xs font-semibold">
+          <div className="flex items-center gap-1.5 text-ok">
+            <CheckCircle2 size={14} /> Right to Access
+          </div>
+          <div className="flex items-center gap-1.5 text-ok">
+            <CheckCircle2 size={14} /> Right to Correction
+          </div>
+          <div className="flex items-center gap-1.5 text-ok">
+            <CheckCircle2 size={14} /> Right to Erasure
+          </div>
+          <div className="flex items-center gap-1.5 text-ok">
+            <CheckCircle2 size={14} /> Grievance Redressal
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Consent Controls */}
         <div className="bg-card border border-line rounded-2xl p-6 shadow-sm space-y-5">
           <div className="border-b border-line pb-4">
-            <h2 className="text-base font-bold text-ink">Student Consent Directives</h2>
+            <h2 className="text-base font-bold text-ink">Granular Student Consent Directives</h2>
             <p className="text-xs text-mut mt-0.5">
-              Granular access controls governing what data is surfaced to algorithms and corporate recruiters
+              Governs what telemetry is surfaced to matching engines and corporate recruitment partners
             </p>
           </div>
 
           <div className="space-y-3.5">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-bg border border-line">
-              <div className="space-y-0.5 max-w-sm">
-                <b className="text-xs font-bold text-ink block">LeetCode Problem-Solving Telemetry</b>
-                <p className="text-[11px] text-mut">Import and verify public algorithmic submission counts (read-only)</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => toggleOption('lc')}
-                className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${
-                  privacy.lc ? 'bg-pri' : 'bg-slate-300 dark:bg-slate-700'
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                    privacy.lc ? 'translate-x-5' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl bg-bg border border-line">
-              <div className="space-y-0.5 max-w-sm">
-                <b className="text-xs font-bold text-ink block">Approved Recruiter Portal Visibility</b>
-                <p className="text-[11px] text-mut">Only verified and evidence-linked competencies are exposed to recruiters</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => toggleOption('rec')}
-                className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${
-                  privacy.rec ? 'bg-pri' : 'bg-slate-300 dark:bg-slate-700'
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                    privacy.rec ? 'translate-x-5' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl bg-bg border border-line">
-              <div className="space-y-0.5 max-w-sm">
-                <b className="text-xs font-bold text-ink block">GitHub Read-Only OAuth Integration</b>
-                <p className="text-[11px] text-mut">
-                  {githubConnected
-                    ? 'Connected (@rahulk-dev) · Public repo commits and PR analysis'
-                    : 'Disconnected · No GitHub access active'}
-                </p>
-              </div>
-              {githubConnected ? (
+            {(privacyData?.consents || [
+              { purpose: 'github_sync', title: 'GitHub Repository & Commit Synchronization', description: 'Read-only inspection of public commit frequency, languages, and repo statistics.', legal_basis: 'DPDP Section 6 (Explicit Consent)', granted: true },
+              { purpose: 'placement_matching', title: 'Recruiter Discovery & Placement Matching', description: 'Permits verified competency sharing with verified corporate recruitment partners.', legal_basis: 'DPDP Section 6 (Explicit Consent)', granted: true },
+              { purpose: 'ai_learning_path', title: 'Personalized AI Skill Remediation', description: 'Processes diagnostic assessment results to generate customized learning roadmaps.', legal_basis: 'Legitimate Use (Placement Support)', granted: true },
+            ]).map((consent) => (
+              <div key={consent.purpose} className="flex items-center justify-between p-4 rounded-xl bg-bg border border-line gap-4">
+                <div className="space-y-1">
+                  <b className="text-xs font-bold text-ink block">{consent.title}</b>
+                  <p className="text-[11px] text-mut leading-tight">{consent.description}</p>
+                  <span className="text-[10px] text-pri font-mono block">Basis: {consent.legal_basis}</span>
+                </div>
                 <button
                   type="button"
-                  onClick={handleRevokeGitHub}
-                  className="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-bt text-bad hover:bg-bad hover:text-white transition-colors shrink-0"
+                  onClick={() => handleToggleConsent(consent.purpose, consent.granted)}
+                  className={`w-11 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${
+                    consent.granted ? 'bg-pri' : 'bg-slate-300 dark:bg-slate-700'
+                  }`}
                 >
-                  Revoke Tokens
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                      consent.granted ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
                 </button>
-              ) : (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-line text-mut shrink-0">
-                  Inactive
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="p-3.5 bg-bg rounded-xl border border-line text-xs text-mut leading-relaxed">
-            <b className="text-ink block mb-0.5">Statutory Right to Withdraw:</b>
-            Under Section 6 of the DPDP Act 2023, withdrawing consent will immediately delete synchronized cached tokens without impacting your institutional academic standing.
-          </div>
-        </div>
-
-        {/* Explainability Breakdown */}
-        <div className="bg-card border border-line rounded-2xl p-6 shadow-sm space-y-5">
-          <div className="border-b border-line pb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-ink">Explainable Placement Decisions</h2>
-              <p className="text-xs text-mut mt-0.5">
-                Exact algorithmic weights governing your candidate placement rank
-              </p>
-            </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-okt text-ok flex items-center gap-1">
-              <CheckCircle2 size={13} /> Transparent Factors
-            </span>
-          </div>
-
-          <div className="space-y-4 pt-1">
-            {explainabilityFactors.map((f) => (
-              <div key={f.label} className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-ink">{f.label}</span>
-                    <span className="text-mut text-[11px] block mt-0.5">{f.desc}</span>
-                  </div>
-                  <b className="font-mono text-xs text-pri">{f.pct}%</b>
-                </div>
-                <div className="h-2 w-full bg-bg border border-line rounded-full overflow-hidden flex">
-                  <div className="h-full bg-pri rounded-full transition-all duration-500" style={{ width: `${f.pct}%` }} />
-                </div>
               </div>
             ))}
           </div>
 
-          <div className="p-3.5 bg-bg rounded-xl border border-line text-xs text-mut leading-relaxed space-y-1">
-            <b className="text-ink block">Right to Explanation:</b>
-            <p>
-              Students have the irrevocable statutory right to receive human-readable explanations for all algorithmic ranking outcomes. Zero black-box neural scoring is used in placement recommendations.
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleRevokeGitHub}
+              className="w-full py-2.5 rounded-xl border border-rose-500/30 text-rose-600 hover:bg-rose-500/10 text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <UserX size={15} />
+              Revoke All GitHub Access & Erase Tokens
+            </button>
+          </div>
+        </div>
+
+        {/* Explainability & Audit Log */}
+        <div className="bg-card border border-line rounded-2xl p-6 shadow-sm space-y-5">
+          <div className="border-b border-line pb-4">
+            <h2 className="text-base font-bold text-ink">Explainability & Non-Discrimination Audit</h2>
+            <p className="text-xs text-mut mt-0.5">
+              Deterministic factor weights guaranteeing auditability and zero black-box scoring
             </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { label: 'Adaptive SQL Machine Assessment (17/20)', pct: 60, desc: 'Proctored algorithmic diagnostic score' },
+              { label: 'Python Backend Repositories (41 Commits)', pct: 25, desc: 'Public commit frequency & consistency' },
+              { label: 'DBMS Laboratory Evaluation (9/10)', pct: 15, desc: 'Institutional coursework benchmark' },
+            ].map((factor) => (
+              <div key={factor.label} className="p-3.5 rounded-xl bg-bg border border-line space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <b className="text-ink">{factor.label}</b>
+                  <span className="text-pri font-bold font-mono">{factor.pct}%</span>
+                </div>
+                <ProgressBar value={factor.pct} color="primary" />
+                <p className="text-[11px] text-mut">{factor.desc}</p>
+              </div>
+            ))}
+
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+              <b className="flex items-center gap-1.5 font-bold">
+                <CheckCircle2 size={14} /> Statutory Non-Discrimination Guarantee
+              </b>
+              <p className="leading-relaxed">
+                ProofHire algorithms operate under strict four-fifths disparate impact monitoring. No student is excluded based on protected demographic attributes.
+              </p>
+            </div>
           </div>
         </div>
       </div>
