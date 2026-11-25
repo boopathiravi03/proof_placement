@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { CompetencyState } from '@/types';
-import { CheckCircle2, ShieldAlert, Clock, Sparkles } from 'lucide-react';
+import { CheckCircle2, ShieldAlert, Clock, Link2 } from 'lucide-react';
 
 interface CompetencyBadgeProps {
   state: CompetencyState | string;
@@ -24,7 +24,7 @@ const BADGE_CONFIG: Record<
   'Evidence-linked': {
     label: 'Evidence-linked',
     style: 'bg-blt text-blu border-blu/20',
-    icon: <Sparkles size={11} className="mr-1" />,
+    icon: <Link2 size={11} className="mr-1" aria-hidden="true" />,
   },
   Assessed: {
     label: 'Assessed',

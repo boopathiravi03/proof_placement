@@ -481,3 +481,172 @@ export interface ResumeDataResponse {
   certifications: Array<{ title: string; issuer: string; date: string }>;
   education: Array<{ degree: string; institution: string; score: string; year: string }>;
 }
+
+// Phase 5: Personalized AI Learning Path & Skill-Gap Closure Engine Types
+export type GapPriority = 'Critical' | 'High' | 'Medium' | 'Low';
+export type GapStatus =
+  | 'meets_requirement'
+  | 'needs_improvement'
+  | 'missing_skill'
+  | 'evidence_required'
+  | 'assessment_required'
+  | 'reassessment_recommended';
+
+export interface SkillGapItem {
+  skill_name: string;
+  required_proficiency: string;
+  required_evidence_level: string;
+  current_proficiency: string;
+  current_state: string;
+  gap_status: GapStatus | string;
+  priority: GapPriority | string;
+  priority_score: number;
+  mandatory: boolean;
+  importance: number;
+  prerequisites: string[];
+  evidence_count: number;
+  explanation: string;
+  priority_reason: string;
+}
+
+export interface SkillGapAnalysisResponse {
+  student_id: string;
+  college_id: string;
+  target_role: string;
+  summary: {
+    total_required_skills: number;
+    meets_requirement: number;
+    critical_gaps: number;
+    high_priority_gaps: number;
+    evidence_required: number;
+    assessment_required: number;
+  };
+  gaps: SkillGapItem[];
+}
+
+export interface LearningResourceItem {
+  id: string;
+  title: string;
+  provider: string;
+  url: string;
+  resource_type: string;
+  is_verified: boolean;
+  is_external: boolean;
+  source_label?: string;
+}
+
+export interface DetailedLearningTask {
+  id: string;
+  title: string;
+  description: string;
+  skill: string;
+  learning_objective?: string;
+  priority: GapPriority | string;
+  estimated_minutes: number;
+  difficulty: string;
+  task_type: string;
+  prerequisites: string[];
+  practical_activity?: string;
+  expected_deliverable?: string;
+  completion_criteria?: string;
+  recommended_reassessment?: string;
+  status: 'not_started' | 'in_progress' | 'submitted' | 'awaiting_review' | 'completed' | 'reassessment_required' | string;
+  time_spent_minutes?: number | null;
+  task_order: number;
+  completed: boolean;
+  completed_at?: string | null;
+  resources: LearningResourceItem[];
+}
+
+export interface DetailedLearningPathResponse {
+  learning_path_id: string;
+  student_id: string;
+  college_id: string;
+  target_role: string;
+  missing_skills: string[];
+  recommendation_version: string;
+  readiness_before?: number | null;
+  readiness_after?: number | null;
+  gap_analysis: SkillGapAnalysisResponse;
+  tasks: DetailedLearningTask[];
+}
+
+export interface LearningProgressResponse {
+  student_id: string;
+  target_role: string;
+  completed_tasks_count: number;
+  pending_tasks_count: number;
+  total_tasks_count: number;
+  tracked_time_minutes: number | null;
+  submissions_count: number;
+  readiness_before: number;
+  readiness_current: number;
+  before_after_assessments: Array<{
+    skill: string;
+    initial_score_pct: number;
+    latest_score_pct: number;
+    attempts_count: number;
+    delta_pct: number;
+  }>;
+  skills_meeting_requirement: string[];
+  remaining_gaps: string[];
+  skills_needing_verification: string[];
+}
+
+export interface RecommendedProjectItem {
+  title: string;
+  description: string;
+  skills_covered: string[];
+  expected_features: string[];
+  suggested_technology: string;
+  deliverables: string;
+  evaluation_criteria: string;
+}
+
+export interface CohortSkillGapsResponse {
+  college_id: string;
+  target_role: string;
+  cohort_size: number;
+  most_common_gaps: Array<{
+    skill: string;
+    students_with_gap: number;
+    critical_count: number;
+    gap_percentage: number;
+  }>;
+  critical_missing_skills: string[];
+  role_competency_distribution: {
+    ready: number;
+    developing: number;
+    early_stage: number;
+  };
+  students_requiring_support: Array<{
+    student_id: string;
+    name: string;
+    branch: string;
+    critical_gaps: number;
+    skills_meeting_requirement: number;
+    total_required: number;
+    focus_skills: string[];
+  }>;
+  training_recommendations: string[];
+}
+
+export interface TrainingInterventionItem {
+  id: string;
+  title: string;
+  description?: string;
+  target_role: string;
+  target_skills: string[];
+  status: string;
+  created_by: string;
+  created_at?: string;
+  effectiveness?: {
+    intervention_id: string;
+    enrolled_count: number;
+    completed_count: number;
+    in_progress_count: number;
+    pre_training_avg_score: number | null;
+    post_training_avg_score: number | null;
+    score_improvement_pct: number | null;
+  };
+}

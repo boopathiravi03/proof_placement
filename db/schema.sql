@@ -284,7 +284,375 @@ end $$ language plpgsql;
 drop trigger if exists audit_no_change on audit_log;
 create trigger audit_no_change before update or delete on audit_log for each row execute function audit_immutable();
 
--- 15. Row Level Security Policies
+-- 15. Phase 5: Personalized Learning Path, Skill Gaps & Training Interventions
+create table if not exists skill_prerequisites (
+  id uuid primary key default gen_random_uuid(),
+  skill_name text not null,
+  prerequisite_skill text not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists learning_resources (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  provider text not null,
+  url text not null,
+  resource_type text not null,
+  skill_name text not null,
+  is_verified boolean default true,
+  is_external boolean default true,
+  approved_by text,
+  soft_deleted boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists skill_gaps (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references students(id) on delete cascade,
+  college_id uuid not null references colleges(id) on delete cascade,
+  target_role text not null,
+  skill_name text not null,
+  required_proficiency text default 'Intermediate',
+  current_proficiency text default 'Unknown',
+  current_state text default 'unknown',
+  gap_status text not null,
+  priority text default 'Medium',
+  priority_score numeric(5,2) default 0,
+  mandatory boolean default true,
+  importance numeric(3,2) default 1.0,
+  explanation text not null,
+  priority_reason text not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists task_submissions (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references learning_tasks(id) on delete cascade,
+  student_id uuid not null references students(id) on delete cascade,
+  college_id uuid not null references colleges(id) on delete cascade,
+  artifact_type text default 'project_url',
+  artifact_url text not null,
+  notes text,
+  evidence_id uuid,
+  status text default 'awaiting_review',
+  reviewed_by text,
+  review_notes text,
+  reviewed_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists learning_events (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  learning_path_id uuid,
+  task_id uuid,
+  event_type text not null,
+  details jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
+);
+
+create table if not exists recommendation_logs (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  target_role text not null,
+  version text default 'v2.0',
+  source text default 'deterministic_template',
+  input_references jsonb default '{}'::jsonb,
+  validation_passed boolean default true,
+  validation_notes text,
+  generated_at timestamptz default now()
+);
+
+create table if not exists training_interventions (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  created_by text not null,
+  title text not null,
+  description text,
+  target_role text not null,
+  target_skills jsonb default '[]'::jsonb,
+  status text default 'active',
+  soft_deleted boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists intervention_students (
+  id uuid primary key default gen_random_uuid(),
+  intervention_id uuid not null references training_interventions(id) on delete cascade,
+  student_id uuid not null references students(id) on delete cascade,
+  college_id uuid not null references colleges(id) on delete cascade,
+  assigned_task_ids jsonb default '[]'::jsonb,
+  participation_status text default 'assigned',
+  pre_avg_score numeric(5,2),
+  post_avg_score numeric(5,2),
+  assigned_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 16. Phase 6: Intelligent Placement Matching, Campus Drives & Bulk Communications
+create table if not exists company_college_access (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references companies(id) on delete cascade,
+  college_id uuid not null references colleges(id) on delete cascade,
+  recruiter_user_id uuid,
+  authorized boolean default true,
+  created_at timestamptz default now()
+);
+
+create table if not exists drive_rounds (
+  id uuid primary key default gen_random_uuid(),
+  drive_id uuid not null references placement_drives(id) on delete cascade,
+  college_id uuid not null references colleges(id) on delete cascade,
+  round_order int default 1,
+  name text not null,
+  round_type text default 'interview',
+  room text,
+  time_slot text,
+  scheduled_date text,
+  created_at timestamptz default now()
+);
+
+create table if not exists application_stage_history (
+  id uuid primary key default gen_random_uuid(),
+  application_id uuid not null references applications(id) on delete cascade,
+  college_id uuid not null references colleges(id) on delete cascade,
+  previous_status text not null,
+  new_status text not null,
+  actor text not null,
+  reason text,
+  created_at timestamptz default now()
+);
+
+create table if not exists interview_schedules (
+  id uuid primary key default gen_random_uuid(),
+  drive_id uuid not null,
+  application_id uuid not null,
+  student_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  round_name text not null,
+  interviewer text not null,
+  scheduled_date text not null,
+  time_slot text not null,
+  room text not null,
+  status text default 'scheduled',
+  created_at timestamptz default now()
+);
+
+create table if not exists recruiter_feedback (
+  id uuid primary key default gen_random_uuid(),
+  application_id uuid not null,
+  drive_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  recruiter_name text not null,
+  round_name text not null,
+  rating int default 4,
+  strengths text,
+  concerns text,
+  recommendation text default 'advance',
+  is_private boolean default true,
+  created_at timestamptz default now()
+);
+
+create table if not exists selection_decisions (
+  id uuid primary key default gen_random_uuid(),
+  application_id uuid unique not null,
+  drive_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  decision text not null,
+  package_ctc text,
+  decided_by text not null,
+  officer_approved boolean default false,
+  notes text,
+  created_at timestamptz default now()
+);
+
+create table if not exists communication_templates (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  name text not null,
+  template_type text not null,
+  subject text not null,
+  body text not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists communication_logs (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  drive_id uuid,
+  sender text not null,
+  template_type text not null,
+  subject text not null,
+  recipient_count int default 0,
+  recipient_emails jsonb default '[]'::jsonb,
+  status text default 'preview_simulated',
+  provider_mode text default 'simulated_preview',
+  error_message text,
+  created_at timestamptz default now()
+);
+
+-- 17. Phase 7: Institutional Intelligence, Data Quality & Accreditation Reporting
+create table if not exists metric_definitions (
+  id uuid primary key default gen_random_uuid(),
+  metric_key text unique not null,
+  metric_name text not null,
+  definition text not null,
+  calculation_formula text not null,
+  data_source text not null,
+  reporting_period text default 'Current Academic Cycle',
+  inclusion_criteria text not null,
+  exclusion_criteria text not null,
+  missing_data_handling text not null,
+  data_owner text default 'Training & Placement Office',
+  created_at timestamptz default now()
+);
+
+create table if not exists analytics_snapshots (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  snapshot_type text not null,
+  reporting_period text default '2025-2026',
+  filters_json jsonb default '{}'::jsonb,
+  payload_json jsonb default '{}'::jsonb,
+  computed_at timestamptz default now()
+);
+
+create table if not exists data_quality_issues (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  check_name text not null,
+  severity text default 'warning',
+  entity_type text not null,
+  affected_count int default 0,
+  description text not null,
+  resolved boolean default false,
+  detected_at timestamptz default now()
+);
+
+create table if not exists institutional_reports (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  report_type text not null,
+  reporting_period text default '2025-2026',
+  generated_by text not null,
+  metrics_json jsonb default '{}'::jsonb,
+  missing_data_warnings jsonb default '[]'::jsonb,
+  evidence_references jsonb default '[]'::jsonb,
+  disclaimer text not null,
+  created_at timestamptz default now()
+);
+
+create table if not exists university_college_access (
+  id uuid primary key default gen_random_uuid(),
+  university_user_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  authorized boolean default true,
+  created_at timestamptz default now()
+);
+
+-- 18. Phase 8: Trust, Governance, DPDP Privacy, Fairness & Tamper-Evident Audit
+create table if not exists privacy_notice_versions (
+  id uuid primary key default gen_random_uuid(),
+  version text unique not null,
+  title text not null,
+  data_categories jsonb default '[]'::jsonb,
+  purposes jsonb default '[]'::jsonb,
+  sharing_recipients jsonb default '[]'::jsonb,
+  retention_info text not null,
+  user_controls text not null,
+  grievance_contact text not null,
+  effective_date timestamptz default now(),
+  active boolean default true,
+  created_at timestamptz default now()
+);
+
+create table if not exists retention_policies (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  entity_type text not null,
+  retention_days int default 365,
+  legal_exception_note text,
+  auto_anonymize boolean default true,
+  updated_by text default 'Data Protection Officer',
+  updated_at timestamptz default now()
+);
+
+create table if not exists privacy_requests (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null,
+  college_id uuid not null references colleges(id) on delete cascade,
+  request_type text not null,
+  reason text not null,
+  status text default 'pending',
+  reviewer_name text,
+  reviewer_notes text,
+  retention_exception_applied boolean default false,
+  resolved_at timestamptz,
+  created_at timestamptz default now()
+);
+
+create table if not exists data_access_logs (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  actor_id text not null,
+  actor_role text not null,
+  student_id uuid,
+  resource_type text not null,
+  resource_id text,
+  purpose text not null,
+  allowed boolean default true,
+  denial_reason text,
+  created_at timestamptz default now()
+);
+
+create table if not exists fairness_audits (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  analysis_period text default '2025-2026',
+  population_size int default 0,
+  rules_examined jsonb default '[]'::jsonb,
+  data_coverage_pct numeric(5,2) default 100.0,
+  anomalies_detected jsonb default '[]'::jsonb,
+  disparity_indicators jsonb default '{}'::jsonb,
+  limitations text not null,
+  recommended_investigation text not null,
+  human_reviewer text,
+  review_outcome text default 'pending_review',
+  created_at timestamptz default now()
+);
+
+create table if not exists explanation_records (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  student_id uuid,
+  module text not null,
+  decision_output jsonb default '{}'::jsonb,
+  inputs_used jsonb default '{}'::jsonb,
+  rule_or_model_version text default 'v2.0',
+  supporting_evidence jsonb default '[]'::jsonb,
+  missing_data jsonb default '[]'::jsonb,
+  ai_contributed boolean default false,
+  human_reviewed boolean default false,
+  created_at timestamptz default now()
+);
+
+create table if not exists audit_checkpoints (
+  id uuid primary key default gen_random_uuid(),
+  college_id uuid not null references colleges(id) on delete cascade,
+  event_count int default 0,
+  head_hash text not null,
+  hmac_signature text not null,
+  verified_intact boolean default true,
+  created_at timestamptz default now()
+);
+
+-- 19. Row Level Security Policies (USING and WITH CHECK for tenant isolation)
 do $$
 declare
   tbl text;
@@ -293,10 +661,18 @@ begin
     'students', 'competencies', 'evidence', 'consents', 
     'placement_drives', 'eligibility_rules', 'eligibility_decisions', 
     'eligibility_appeals', 'assessment_attempts', 'learning_paths', 
-    'applications', 'approvals', 'audit_log'
+    'applications', 'approvals', 'audit_log',
+    'skill_gaps', 'task_submissions', 'learning_events',
+    'recommendation_logs', 'training_interventions', 'intervention_students',
+    'company_college_access', 'drive_rounds', 'application_stage_history',
+    'interview_schedules', 'recruiter_feedback', 'selection_decisions',
+    'communication_templates', 'communication_logs',
+    'analytics_snapshots', 'data_quality_issues', 'institutional_reports',
+    'retention_policies', 'privacy_requests', 'data_access_logs',
+    'fairness_audits', 'explanation_records', 'audit_checkpoints'
   ] loop
     execute format('alter table %I enable row level security', tbl);
     execute format('drop policy if exists tenant_isolation on %I', tbl);
-    execute format($pol$create policy tenant_isolation on %I using (college_id = (auth.jwt() ->> 'college_id')::uuid)$pol$, tbl);
+    execute format($pol$create policy tenant_isolation on %I using (college_id = (auth.jwt() ->> 'college_id')::uuid) with check (college_id = (auth.jwt() ->> 'college_id')::uuid)$pol$, tbl);
   end loop;
 end $$;

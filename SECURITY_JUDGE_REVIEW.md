@@ -1,0 +1,12 @@
+# Security Judge Review — ProofHire 2.0
+
+**Methodology:** Static inspection of FastAPI routers, `GovernanceService`, `AuditService`, `main.py` middleware, and `db/schema.sql`. No destructive tests were run against production data.
+
+| # | Severity | Affected Component | Verified / Suspected | Finding & Impact | Recommended Fix |
+|---|---|---|---|---|---|
+| 1 | **High** | `backend/app/routers/governance.py`, `companies.py`, `eligibility.py`, `competencies.py` | **Verified** | Endpoints use `Depends(get_current_user_optional)` (or omit `current_user`) so demo mode works without a Bearer JWT. Unauthenticated direct API calls skip `if current_user:` governance checks. | Require mandatory `get_current_user` JWT dependency on all protected routes (or gate anonymous demo fallback behind `ENVIRONMENT == "development"` only). |
+| 2 | **High** | `backend/app/routers/audit.py:30` (`POST /api/audit/{college_id}/tamper`) | **Verified** | `simulate_tampering()` intentionally mutates an `AuditLogEntry` for demo purposes without checking `settings.ENVIRONMENT != "production"` or admin role. | Guard with `if settings.ENVIRONMENT == "production": raise HTTPException(403)` and require admin auth. |
+| 3 | **Medium** | `backend/app/database.py` & `db/schema.sql` | **Verified** | PostgreSQL RLS `tenant_isolation` policies exist in `db/schema.sql`, but `get_db()` does not execute `SET LOCAL app.current_college_id` per request. | Execute `SET LOCAL app.current_college_id` in `get_db()` when running against PostgreSQL. |
+| 4 | **Medium** | `backend/app/main.py:54` (`_RATE_LIMIT_STORE`) | **Verified** | In-memory rate limiting protects single-worker instances only; multi-worker Gunicorn/Uvicorn deployments do not share buckets. | Back `check_rate_limit()` with Redis in production. |
+| 5 | **Low** | `backend/app/services/audit_service.py` (`AuditCheckpoint`) | **Verified** | HMAC-signed checkpoints live in the same database as `audit_logs`; a compromised DB admin with `SECRET_KEY` access could forge both. | Mirror checkpoint hashes to external append-only WORM storage (e.g., S3 Object Lock). |
+| 6 | **Pass (Verified)** | `GovernanceService` (`authorize_and_log_access`, `validate_file_upload`, `redact_sensitive_fields`) | **Verified** | Cross-tenant denials, student ownership, recruiter least-privilege, `.exe`/`.ps1` upload blocking, secret redaction, and `SecurityEvent` logging all pass `test_phase8_governance_security.py`. | Maintain mandatory routing through `GovernanceService`. |

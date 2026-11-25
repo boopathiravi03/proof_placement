@@ -59,7 +59,7 @@ export default function Header() {
         )}
 
         <div className="flex items-center gap-2.5 bg-card border border-line pl-1.5 pr-3.5 py-1.5 rounded-full shadow-sm">
-          <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8a6cff] to-[#4cc3ff] text-white font-bold grid place-items-center text-sm">
+          <span className="w-8 h-8 rounded-full bg-[#172554] text-white font-bold grid place-items-center text-sm">
             {meta.userInitial}
           </span>
           <span className="font-bold text-sm text-ink">{meta.userName}</span>

@@ -1,11 +1,20 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.models.models import Approval
-from backend.app.schemas.schemas import ApprovalActionRequest
+from backend.app.models.models import Approval, User, CommunicationLog
+from backend.app.security import get_current_user_optional
+from backend.app.schemas.schemas import (
+    ApprovalActionRequest,
+    TrainingInterventionCreateRequest,
+    InterventionAssignRequest,
+    BulkCommPreviewRequest,
+)
 from backend.app.services.fairness_service import FairnessService
 from backend.app.services.audit_service import AuditService
+from backend.app.services.intervention_service import InterventionService
+from backend.app.services.drive_service import DriveService
+from backend.app.services.communication_service import CommunicationService
 
 router = APIRouter(prefix="/officer", tags=["T&P Officer Intelligence"])
 
@@ -120,3 +129,187 @@ def export_accreditation_report(college_id: str = "COLLEGE-A", db: Session = Dep
         },
         "status": "Verified & Exported"
     }
+
+# --- Phase 5: Cohort Skill-Gap & Training Intervention Endpoints ---
+
+def _enforce_officer_tenant(current_user: Optional[User], college_id: str):
+    if current_user:
+        if current_user.role not in ["officer", "university_admin"]:
+            raise HTTPException(status_code=403, detail="Unauthorized: Officer or University Admin role required.")
+        if current_user.role == "officer" and current_user.college_id != college_id:
+            raise HTTPException(status_code=403, detail="Tenant isolation violation: Cannot access another college's cohort.")
+
+@router.get("/cohort-skill-gaps")
+def get_cohort_skill_gaps(
+    college_id: str = "COLLEGE-A",
+    target_role: str = "Backend Developer",
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, college_id)
+    return InterventionService.get_cohort_skill_gaps(db, college_id, target_role=target_role)
+
+@router.get("/interventions")
+def list_interventions(
+    college_id: str = "COLLEGE-A",
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, college_id)
+    return InterventionService.list_interventions(db, college_id)
+
+@router.post("/interventions")
+def create_intervention(
+    payload: TrainingInterventionCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, payload.college_id)
+    iv = InterventionService.create_intervention(
+        db=db,
+        college_id=payload.college_id,
+        created_by=current_user.full_name if current_user else payload.created_by,
+        title=payload.title,
+        description=payload.description or "",
+        target_role=payload.target_role,
+        target_skills=payload.target_skills,
+    )
+    return {"id": iv.id, "title": iv.title, "target_role": iv.target_role, "status": iv.status}
+
+@router.post("/interventions/{intervention_id}/assign")
+def assign_students_to_intervention(
+    intervention_id: str,
+    payload: InterventionAssignRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, payload.college_id)
+    try:
+        return InterventionService.assign_students(
+            db=db,
+            intervention_id=intervention_id,
+            college_id=payload.college_id,
+            student_ids=payload.student_ids,
+            actor=current_user.full_name if current_user else payload.actor,
+        )
+    except ValueError as ex:
+        raise HTTPException(status_code=400, detail=str(ex))
+
+@router.get("/interventions/{intervention_id}/effectiveness")
+def get_intervention_effectiveness(
+    intervention_id: str,
+    college_id: str = "COLLEGE-A",
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, college_id)
+    try:
+        return InterventionService.get_intervention_effectiveness(db, intervention_id, college_id)
+    except ValueError as ex:
+        raise HTTPException(status_code=404, detail=str(ex))
+
+# --- Phase 6: Placement Analytics, CSV Export & Bulk Communications ---
+
+@router.get("/placement-analytics")
+def get_placement_analytics(
+    college_id: str = "COLLEGE-A",
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, college_id)
+    return DriveService.get_placement_analytics(db, college_id)
+
+@router.get("/placement-analytics/export-csv")
+def export_placement_analytics_csv(
+    college_id: str = "COLLEGE-A",
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, college_id)
+    csv_data = DriveService.export_analytics_csv(db, college_id)
+    AuditService.log_event(
+        db=db,
+        college_id=college_id,
+        actor=current_user.full_name if current_user else "T&P Officer",
+        action="Exported placement analytics CSV report",
+    )
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=placement_analytics_{college_id}.csv"},
+    )
+
+@router.post("/communications/preview")
+def preview_bulk_communication(
+    payload: BulkCommPreviewRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, payload.college_id)
+    return CommunicationService.preview_bulk_email(
+        db=db,
+        college_id=payload.college_id,
+        audience_filter=payload.audience_filter,
+        template_type=payload.template_type,
+        drive_id=payload.drive_id,
+        department=payload.department,
+        drive_title=payload.drive_title,
+        custom_subject=payload.custom_subject,
+        custom_body=payload.custom_body,
+    )
+
+@router.post("/communications/send")
+def send_bulk_communication(
+    payload: BulkCommPreviewRequest,
+    simulate_failure: bool = False,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, payload.college_id)
+    role = current_user.role if current_user else "officer"
+    sender = current_user.full_name if current_user else "T&P Officer"
+    try:
+        return CommunicationService.send_bulk_communication(
+            db=db,
+            college_id=payload.college_id,
+            sender=sender,
+            sender_role=role,
+            audience_filter=payload.audience_filter,
+            template_type=payload.template_type,
+            drive_id=payload.drive_id,
+            department=payload.department,
+            drive_title=payload.drive_title,
+            custom_subject=payload.custom_subject,
+            custom_body=payload.custom_body,
+            simulate_delivery_failure=simulate_failure,
+        )
+    except PermissionError as ex:
+        raise HTTPException(status_code=403, detail=str(ex))
+
+@router.get("/communications/logs")
+def get_communication_logs(
+    college_id: str = "COLLEGE-A",
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    _enforce_officer_tenant(current_user, college_id)
+    logs = (
+        db.query(CommunicationLog)
+        .filter(CommunicationLog.college_id == college_id)
+        .order_by(CommunicationLog.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": l.id,
+            "sender": l.sender,
+            "template_type": l.template_type,
+            "subject": l.subject,
+            "recipient_count": l.recipient_count,
+            "status": l.status,
+            "provider_mode": l.provider_mode,
+            "error_message": l.error_message,
+            "created_at": l.created_at.isoformat() if l.created_at else None,
+        }
+        for l in logs
+    ]

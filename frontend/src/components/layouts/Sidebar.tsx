@@ -60,7 +60,7 @@ export default function Sidebar() {
     <aside className="bg-side text-[#e9e6ff] p-5 flex flex-col gap-1.5 sticky top-0 h-screen overflow-y-auto">
       {/* Brand Logo */}
       <Link href="/" className="font-extrabold text-[21px] mx-2 mb-4 flex gap-2.5 items-center text-white no-underline">
-        <b className="w-8 h-8 rounded-[9px] bg-gradient-to-br from-[#8a6cff] to-[#4cc3ff] grid place-items-center text-white text-base font-extrabold">
+        <b className="w-8 h-8 rounded-[9px] bg-pri grid place-items-center text-white text-base font-extrabold">
           P
         </b>
         ProofHire 2.0

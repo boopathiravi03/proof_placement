@@ -10,3 +10,5 @@ from backend.app.routers.officer import router as officer_router
 from backend.app.routers.university import router as university_router
 from backend.app.routers.audit import router as audit_router
 from backend.app.routers.student import router as student_router
+from backend.app.routers.intelligence import router as intelligence_router
+from backend.app.routers.governance import router as governance_router

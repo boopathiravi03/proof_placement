@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import { useApp } from '@/context/AppContext';
 import { api } from '@/lib/api';
-import { CheckCircle2, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, AlertCircle, Clock, Scale } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 
 interface Proposal {
@@ -46,6 +46,30 @@ const INITIAL_PROPOSALS: Record<'A' | 'B', Proposal[]> = {
 export default function ApprovalsPage() {
   const { college, showToast, addTimelineItem } = useApp();
   const [proposals, setProposals] = useState<Record<'A' | 'B', Proposal[]>>(INITIAL_PROPOSALS);
+  const [appeals, setAppeals] = useState<any[]>([]);
+  const collegeId = `COLLEGE-${college}`;
+
+  const loadAppeals = async () => {
+    const res = await api.listAppeals(collegeId);
+    if (res) setAppeals(res);
+  };
+
+  useEffect(() => {
+    loadAppeals();
+  }, [collegeId]);
+
+  const handleReviewAppeal = async (appealId: string, action: 'approved' | 'rejected') => {
+    const res = await api.reviewAppeal(appealId, {
+      college_id: collegeId,
+      officer_name: 'T&P Officer',
+      action,
+      reviewer_notes: action === 'approved' ? 'Verified and approved by Placement Officer' : 'Criteria not met upon manual review',
+    });
+    if (res) {
+      showToast(`Appeal ${action}: ${appealId}`);
+      await loadAppeals();
+    }
+  };
 
   const currentList = proposals[college] || [];
 
@@ -142,6 +166,65 @@ export default function ApprovalsPage() {
           <EmptyState
             title="All proposals processed"
             description="The AI recommendation engine has no pending intervention proposals requiring human-in-the-loop review for this tenant."
+          />
+        )}
+      </div>
+
+      {/* Phase 6: Student Eligibility Appeals & Correction Requests */}
+      <div className="bg-card border border-line rounded-2xl p-6 shadow-sm space-y-5 max-w-4xl">
+        <div className="flex items-center justify-between border-b border-line pb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Scale className="text-pri" size={20} />
+            <h2 className="text-base font-bold text-ink">Student Eligibility Appeals & Correction Queue</h2>
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-pri/10 text-pri">
+            {appeals.filter((a) => a.status === 'pending').length} Pending Appeals
+          </span>
+        </div>
+
+        {appeals.length > 0 ? (
+          <div className="space-y-3">
+            {appeals.map((a) => (
+              <div key={a.id} className="p-4 rounded-xl bg-bg border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <b className="text-xs font-bold text-ink">Student: {a.student_id}</b>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-card border border-line text-mut uppercase">
+                      {a.appeal_type || 'appeal'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                      a.status === 'approved' ? 'bg-okt text-ok' : a.status === 'rejected' ? 'bg-bt text-bad' : 'bg-amber-500/10 text-amber-600'
+                    }`}>
+                      {a.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-mut">{a.reason}</p>
+                </div>
+                {a.status === 'pending' && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleReviewAppeal(a.id, 'rejected')}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-line bg-card text-mut hover:text-ink cursor-pointer"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReviewAppeal(a.id, 'approved')}
+                      className="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-pri text-white cursor-pointer"
+                    >
+                      Approve & Recalculate
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No eligibility appeals"
+            description="No student eligibility correction requests are currently queued for this college."
           />
         )}
       </div>

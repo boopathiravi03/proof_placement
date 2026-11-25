@@ -96,7 +96,7 @@ export default function RootHomePage() {
   return (
     <div className="min-h-screen bg-bg text-ink flex flex-col">
       {/* Top Navigation */}
-      <header className="h-18 bg-card/80 backdrop-blur-md border-b border-line sticky top-0 z-50 px-6 sm:px-12 flex items-center justify-between">
+      <header className="h-16 bg-card border-b border-line sticky top-0 z-50 px-6 sm:px-12 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 font-extrabold text-xl text-ink">
           <span className="w-9 h-9 rounded-xl bg-pri text-white flex items-center justify-center font-black text-base shadow-sm">
             P
@@ -130,37 +130,35 @@ export default function RootHomePage() {
           Enterprise Placement & Evidence Intelligence Platform
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-black text-ink tracking-tight max-w-4xl mx-auto leading-tight">
+        <h1 className="text-4xl sm:text-5xl font-black text-ink tracking-tight max-w-4xl mx-auto leading-tight">
           Transform student potential into{' '}
-          <span className="bg-gradient-to-r from-pri via-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            verifiable competency.
-          </span>
+          <span className="text-pri">verifiable competency.</span>
         </h1>
 
-        <p className="text-base sm:text-lg text-mut max-w-2xl mx-auto leading-relaxed">
-          Zero unverified claims. ProofHire connects students, placement officers, corporate recruiters, and universities through explainable, tamper-evident placement intelligence.
+        <p className="text-base sm:text-lg text-mut max-w-3xl mx-auto leading-relaxed">
+          ProofHire does not simply rank students by CGPA or trust resume claims. It builds an evidence-backed picture of student capabilities, identifies skill gaps, helps students improve, and connects demonstrated competencies with placement opportunities.
         </p>
 
-        {/* Live System Telemetry Bar */}
+        {/* Honest Architecture & Governance Bar */}
         <div className="pt-4 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-mut font-semibold">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-ok animate-pulse" />
-            1,390+ Audited Students
+            <CheckCircle2 size={13} className="text-ok" />
+            6-State Evidence Lifecycle
           </span>
           <span className="text-line hidden sm:inline">•</span>
           <span className="flex items-center gap-1.5">
             <Lock size={13} className="text-pri" />
-            PostgreSQL RLS Quarantined
+            Tenant Isolation &amp; RLS
           </span>
           <span className="text-line hidden sm:inline">•</span>
           <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={13} className="text-ok" />
-            SHA-256 Merkle Ledger
+            <ShieldCheck size={13} className="text-ok" />
+            SHA-256 Tamper-Evident Audit
           </span>
           <span className="text-line hidden sm:inline">•</span>
           <span className="flex items-center gap-1.5">
-            <Scale size={13} className="text-amber-500" />
-            Four-Fifths Fairness Compliant
+            <Scale size={13} className="text-amber-600" />
+            Four-Fifths Fairness Diagnostics
           </span>
         </div>
       </section>
@@ -177,7 +175,7 @@ export default function RootHomePage() {
             <Link
               key={ws.role}
               href={ws.href}
-              className="group bg-card border border-line/80 hover:border-pri/40 rounded-3xl p-6 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6"
+              className="group bg-card border border-line hover:border-pri/40 rounded-2xl p-6 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-6"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">

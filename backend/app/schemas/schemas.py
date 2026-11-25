@@ -237,3 +237,167 @@ class DriveAppealSubmit(BaseModel):
     drive_id: str
     student_id: str
     reason: str
+
+# --- Phase 5: Personalized Learning Path, Skill-Gap & Intervention Schemas ---
+class TaskProgressUpdateRequest(BaseModel):
+    task_id: str
+    student_id: str
+    status: str  # not_started, in_progress, submitted, awaiting_review, completed, reassessment_required
+    time_spent_minutes: Optional[int] = None
+
+class TaskEvidenceSubmitRequest(BaseModel):
+    task_id: str
+    student_id: str
+    artifact_type: str = "project_url"  # repo, document, project_url, screenshot
+    artifact_url: str
+    notes: Optional[str] = None
+
+class TaskSubmissionReviewRequest(BaseModel):
+    submission_id: str
+    reviewer_name: str
+    reviewer_role: str = "officer"
+    approved: bool
+    review_notes: Optional[str] = ""
+
+class ReassessmentRequest(BaseModel):
+    student_id: str
+    skill_name: str
+    target_role: Optional[str] = "Backend Developer"
+
+class LearningResourceCreateRequest(BaseModel):
+    title: str
+    provider: str
+    url: str
+    resource_type: str = "documentation"
+    skill_name: str
+
+class TrainingInterventionCreateRequest(BaseModel):
+    college_id: str = "COLLEGE-A"
+    created_by: str = "T&P Officer"
+    title: str
+    description: Optional[str] = ""
+    target_role: str = "Backend Developer"
+    target_skills: List[str] = []
+
+class InterventionAssignRequest(BaseModel):
+    college_id: str = "COLLEGE-A"
+    student_ids: List[str]
+    actor: str = "T&P Officer"
+
+# --- Phase 6: Intelligent Placement Matching, Eligibility & Campus Drive Schemas ---
+class CompanyCreateRequest(BaseModel):
+    name: str
+    industry: str
+    description: Optional[str] = None
+    website: Optional[str] = None
+    recruiter_contact: Optional[str] = None
+    college_id: str = "COLLEGE-A"
+
+class JobOpportunityCreateRequest(BaseModel):
+    company_id: str
+    title: str
+    description: Optional[str] = None
+    category: str = "Engineering"
+    location: str = "Bengaluru / Hybrid"
+    employment_type: str = "Full-Time"
+    salary_range: Optional[str] = None
+    min_cgpa: float = 6.5
+    max_backlogs: int = 0
+    required_skills: Optional[List[str]] = None
+    preferred_skills: Optional[List[str]] = None
+    min_assessment_score: float = 60.0
+    eligible_departments: Optional[List[str]] = None
+    eligible_grad_years: Optional[List[int]] = None
+    college_id: str = "COLLEGE-A"
+
+class ApproveExtractedSkillsRequest(BaseModel):
+    approved_skills: List[str]
+    preferred_skills: Optional[List[str]] = None
+    college_id: str = "COLLEGE-A"
+
+class EligibilityRuleCreateRequest(BaseModel):
+    college_id: str = "COLLEGE-A"
+    rule_name: str
+    description: Optional[str] = None
+    min_cgpa: float = 6.5
+    max_backlogs: int = 0
+    required_skills: List[str] = []
+    eligible_departments: List[str] = []
+    eligible_grad_years: List[int] = []
+    min_assessment_score: float = 0.0
+    standing_arrears_allowed: bool = False
+    job_role_id: Optional[str] = None
+    drive_id: Optional[str] = None
+
+class EligibilityOverrideRequest(BaseModel):
+    decision_id: str
+    college_id: str = "COLLEGE-A"
+    officer_name: str = "T&P Officer"
+    new_eligible: bool
+    reason: str
+
+class AppealReviewRequest(BaseModel):
+    college_id: str = "COLLEGE-A"
+    officer_name: str = "T&P Officer"
+    action: str  # approved, rejected, clarification_requested
+    reviewer_notes: str = ""
+    corrected_data: Optional[Dict[str, Any]] = None
+
+class DriveCreateRequest(BaseModel):
+    college_id: str = "COLLEGE-A"
+    company_id: str
+    job_role_id: str
+    title: str
+    day_of_week: str = "Wed"
+    activity: str = "Campus Drive"
+    description: Optional[str] = None
+    drive_date: Optional[str] = None
+    time_slot: Optional[str] = "10:00 AM - 01:00 PM"
+    room: Optional[str] = "Auditorium A"
+    application_deadline: Optional[datetime] = None
+    selection_stages: Optional[List[str]] = None
+    publish_immediately: bool = False
+
+class StageTransitionRequest(BaseModel):
+    new_status: str
+    college_id: str = "COLLEGE-A"
+    actor: str = "T&P Officer"
+    actor_role: str = "officer"
+    reason: Optional[str] = None
+
+class InterviewScheduleRequest(BaseModel):
+    drive_id: str
+    application_id: str
+    college_id: str = "COLLEGE-A"
+    round_name: str
+    interviewer: str
+    scheduled_date: str
+    time_slot: str
+    room: str
+
+class RecruiterFeedbackRequest(BaseModel):
+    application_id: str
+    college_id: str = "COLLEGE-A"
+    recruiter_name: str = "Recruiter"
+    round_name: str
+    rating: int = 4
+    strengths: str = ""
+    concerns: str = ""
+    recommendation: str = "advance"
+
+class SelectionDecisionRequest(BaseModel):
+    application_id: str
+    college_id: str = "COLLEGE-A"
+    decision: str  # selected, not_selected, waitlisted
+    package_ctc: Optional[str] = None
+    notes: Optional[str] = None
+
+class BulkCommPreviewRequest(BaseModel):
+    college_id: str = "COLLEGE-A"
+    drive_id: Optional[str] = None
+    audience_filter: str = "eligible"
+    template_type: str = "drive_announcement"
+    department: Optional[str] = None
+    drive_title: str = "Campus Placement Drive"
+    custom_subject: Optional[str] = None
+    custom_body: Optional[str] = None

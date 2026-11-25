@@ -7,9 +7,11 @@ DEFAULT_DB_PATH = os.path.join(BASE_DIR, "proofhire.db")
 class Settings(BaseModel):
     PROJECT_NAME: str = "ProofHire 2.0"
     VERSION: str = "2.0.0"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "proofhire-enterprise-secret-key-change-in-prod-2026")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "*")
     
     # Dual database support: default to root proofhire.db, or Postgres via DATABASE_URL
     DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")

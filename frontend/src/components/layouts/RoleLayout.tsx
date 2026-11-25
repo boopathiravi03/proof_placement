@@ -53,6 +53,12 @@ export default function RoleLayout({
 
   return (
     <div className="min-h-screen bg-bg text-ink flex">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-pri focus:text-white focus:text-xs focus:font-bold"
+      >
+        Skip to main content
+      </a>
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div
@@ -77,6 +83,7 @@ export default function RoleLayout({
           </Link>
           <button
             type="button"
+            aria-label="Close navigation menu"
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1.5 rounded-lg text-[#94a3b8] hover:text-white"
           >
@@ -102,6 +109,7 @@ export default function RoleLayout({
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? 'page' : undefined}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-xs transition-colors ${
                   isActive
@@ -154,6 +162,7 @@ export default function RoleLayout({
           <div className="flex items-center gap-3">
             <button
               type="button"
+              aria-label="Open navigation menu"
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 rounded-xl text-mut hover:text-ink hover:bg-bg transition-colors"
             >
@@ -184,6 +193,8 @@ export default function RoleLayout({
             <div className="relative">
               <button
                 type="button"
+                aria-label="Toggle notifications"
+                aria-expanded={notificationsOpen}
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                 className="relative p-2 rounded-xl text-mut hover:text-ink hover:bg-bg transition-colors"
               >
@@ -303,7 +314,7 @@ export default function RoleLayout({
         </header>
 
         {/* Main Content Workspace */}
-        <main className="flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto">
+        <main id="main-content" className="flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

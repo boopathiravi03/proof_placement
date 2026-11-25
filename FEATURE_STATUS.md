@@ -39,9 +39,12 @@ This matrix classifies every platform feature against the production requirement
 
 | Feature | Current Prototype Status | Upgrade Classification | Action Required |
 |---|---|---|---|
-| Role-Based Skill Gap Analysis | Simulated | **Working** | Compare verified & evidence-linked profile against target role requirements (Backend, Data Analyst, Frontend). |
-| Actionable Learning Tasks | Simulated | **Working** | Step-by-step personalized remediation roadmap with dynamic progress bars. |
-| Evidence Generation on Task Completion | Simulated | **Working** | Completing remediation tasks automatically issues fresh project/practice evidence into student profile. |
+| Role-Based Skill Gap Analysis | Implemented (DB + API + UI) | **Working** | Deterministic gap analysis across 7 roles distinguishing `unknown`, `unassessed`, `expired`, and `low_proficiency`. |
+| Deterministic Gap Prioritization | Implemented | **Working** | Configurable priority rules (`Critical`, `High`, `Medium`, `Low`) with transparent explanations. |
+| Prerequisite-Ordered Learning Paths | Implemented | **Working** | Topological prerequisite ordering, validation layer, verified official resources, and `recommendation_logs`. |
+| Evidence Generation on Task Submission | Implemented | **Working** | Submitting task deliverables creates `TaskSubmission` + `evidence_linked` record (never auto-verifies). |
+| Reassessment & Before/After Progress | Implemented | **Working** | Links to Adaptive Assessment Engine, tracks before/after scores, and updates Readiness Index. |
+| Officer Cohort Skill-Gap & Interventions | Implemented | **Working** | Cohort gap analytics, training intervention creation, student assignment, and pre/post effectiveness tracking. |
 
 ---
 
@@ -59,12 +62,12 @@ This matrix classifies every platform feature against the production requirement
 
 | Feature | Current Prototype Status | Upgrade Classification | Action Required |
 |---|---|---|---|
-| Company & Job Management | Simulated | **Working** | CRUD for company profiles, job roles, required competencies, and drive metadata. |
-| Versioned Rule Eligibility Engine | Partially working | **Needs security correction** | Snapshot rules version, student inputs, failed conditions, and decision timestamp. Persist in database. |
-| Student Eligibility Appeals | Simulated | **Working** | Allow students to submit formal appeals against automated decisions for human T&P review. |
-| Recruiter Verified Talent Search | Simulated | **Needs security correction** | Filter candidates by verified skills; ensure recruiters only see authorized student data. |
-| Hiring Pipeline Management | Simulated | **Needs security correction** | Multi-stage pipeline (Shortlisted → Interview → Offer → Accepted) with officer approval gate on offers. |
-| Drive Calendar & Conflict Management | Simulated | **Working** | Clash detection algorithm for multi-company campus visits and auto-allocation resolution. |
+| Company & Job Management | Implemented (DB + API + UI) | **Working** | Company/job CRUD, college access control, JD skill extraction with human approval gate. |
+| Versioned Rule Eligibility Engine | Implemented | **Working** | Versioned rules, rule-by-rule explanations, missing-data review, officer overrides with required reason. |
+| Student Eligibility Appeals | Implemented | **Working** | Appeal submission, officer review queue, authorized academic correction, and recalculation. |
+| Intelligent Placement Matching | Implemented | **Working** | Transparent compatibility scoring, expired evidence penalties, non-discriminatory guarantees. |
+| Recruiter Workspace & Feedback | Implemented | **Working** | Authorized opportunities, private recruiter feedback, selection decisions, and verified talent search. |
+| Drive Calendar & Conflict Management | Implemented | **Working** | Drive publishing, room/student interview conflict detection, and bulk communication preview/logs. |
 
 ---
 
@@ -72,12 +75,12 @@ This matrix classifies every platform feature against the production requirement
 
 | Feature | Current Prototype Status | Upgrade Classification | Action Required |
 |---|---|---|---|
-| Cohort Skill Heatmaps | Simulated | **Working** | Departmental skill distribution (CSE, IT, ECE, MECH) highlighting at-risk batches. |
-| Four-Fifths Fairness Monitoring | Partially working | **Working** | Calculate group selection rates and flag demographic impact ratios below 0.8 for human review. |
-| Multi-College University View | Simulated | **Needs security correction** | Institutional benchmark dashboard with strict cross-college tenant data isolation. |
-| SHA-256 Hash-Chained Audit Log | Partially working | **Needs security correction** | Enforce cryptographic hash chaining `SHA-256(prev_hash + actor + action + timestamp)` with tamper detection and immutable persistence. |
-| DPDP Consent Management | Simulated | **Working** | Granular data consent toggles with instant revocation and audit logging. |
-| Accreditation Reporting | Simulated | **Working** | Generate NAAC and NIRF formatted placement summary reports. |
+| Institutional Intelligence & Heatmaps | Implemented (DB + API + UI) | **Working** | Real-time cohort KPIs, branch filters, centralized metric definitions, and k-anonymity privacy checks. |
+| Data Quality & Industry Demand Profiler | Implemented | **Working** | Automated data-quality scans + internal job demand vs cohort coverage (separating unapproved AI skills). |
+| Governed Early-Warning Indicators | Implemented | **Working** | Historical data sufficiency gate (`>=30` labels); neutral rule-based support indicators with zero auto-rejection. |
+| Multi-College University Governance | Implemented | **Working** | `university_college_access` scoping, aggregate-only comparisons, and `403` isolation for officers/recruiters. |
+| SHA-256 Hash-Chained Audit Log | Implemented | **Working** | Cryptographic hash chaining `SHA-256(prev_hash + actor + action + timestamp)` with tamper detection. |
+| Accreditation Reporting (NAAC / NIRF) | Implemented | **Working** | Traceable report snapshots, missing-data warnings, CSV & PDF exports, and non-endorsement disclaimers. |
 
 ---
 
@@ -86,5 +89,21 @@ This matrix classifies every platform feature against the production requirement
 | Feature | Current Prototype Status | Upgrade Classification | Action Required |
 |---|---|---|---|
 | Live API Connectivity | Missing | **Working** | Connect frontend views to live FastAPI endpoints while maintaining zero-breakage offline fallback. |
-| Multi-Role View Switching | Working (UI-level) | **Working** | Seamless switching between Student, T&P Officer, Recruiter, and University Administrator views. |
+| Multi-Role View Switching | 
+ (UI-level) | **Working** | Seamless switching between Student, T&P Officer, Recruiter, and University Administrator views. |
 | Interactive Prototype Preservation | Working | **Working** | Ensure all 16 views and their interactive actions remain fully functional. |
+
+---
+
+## 8. Trust, Governance, DPDP Privacy, Fairness & Tamper-Evident Audit (Phase 8)
+
+| Feature | Current Status | Upgrade Classification | Notes |
+|---|---|---|---|
+| Purpose-Specific Consent Center (6 categories) | Implemented (DB + API + UI) | **Working** | Independent toggle/revocation with `policy_version`, `category`, and backend `check_consent()` enforcement |
+| Versioned Privacy Notice & Retention Policies | Implemented (DB + API + UI) | **Working** | `PrivacyNoticeVersion`, per-college `RetentionPolicy`, and non-certification DPDP disclaimer |
+| DPDP Rights Requests (`data_export`, `deletion_erasure`, `correction`, `grievance`) | Implemented (DB + API + UI) | **Working** | Includes JSON export bundle, PII anonymization, and `restricted_retained` retention exceptions |
+| Centralized `GovernanceService` & `DataAccessLog` | Implemented (Backend + UI) | **Working** | Cross-tenant & ownership checks, recruiter least-privilege, `SecurityEvent` logging, upload validation, secret redaction |
+| Comprehensive Fairness Audit & `k < 3` Suppression | Implemented (Backend + UI) | **Working** | Rule-version drift, override justification, four-fifths ratio, and small-group suppression |
+| Centralized `ExplanationService` | Implemented (Backend) | **Working** | Persists `ExplanationRecord` with inputs, evidence, missing data, and `ai_contributed` flag |
+| Concurrency-Safe Hash Chain & HMAC Checkpoints | Implemented (Backend + UI) | **Working** | `_AUDIT_LOCK`, `AuditChainHead`, `AuditVerificationRun`, and HMAC-SHA256 `AuditCheckpoint` |
+| HTTP Security Headers & Rate Limiting | Implemented (Middleware) | **Working** | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and sliding-window `check_rate_limit()` |

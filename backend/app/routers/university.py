@@ -1,4 +1,10 @@
-from fastapi import APIRouter
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from backend.app.database import get_db
+from backend.app.models.models import User
+from backend.app.security import get_current_user_optional
+from backend.app.services.university_service import UniversityService
 
 router = APIRouter(prefix="/university", tags=["University Administration"])
 
@@ -37,3 +43,13 @@ def get_colleges_summary():
             }
         ]
     }
+
+@router.get("/authorized-overview")
+def get_authorized_university_overview(
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    try:
+        return UniversityService.get_authorized_colleges_summary(db, current_user=current_user)
+    except PermissionError as ex:
+        raise HTTPException(status_code=403, detail=str(ex))

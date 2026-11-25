@@ -1,8 +1,9 @@
 import os
-from fastapi import FastAPI, HTTPException, Depends
+import time
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from backend.app.config import settings
@@ -20,7 +21,9 @@ from backend.app.routers import (
     officer_router,
     university_router,
     audit_router,
-    student_router
+    student_router,
+    intelligence_router,
+    governance_router
 )
 from backend.app.services.competency_service import CompetencyService
 from backend.app.services.eligibility_service import EligibilityService
@@ -39,13 +42,38 @@ app = FastAPI(
 )
 
 # Enable CORS for frontend interactions
+_origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()] if settings.ALLOWED_ORIGINS != "*" else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security Headers & Lightweight Rate Limiting Middleware
+_RATE_LIMIT_STORE = {}
+
+def check_rate_limit(client_key: str, max_requests: int = 120, window_seconds: int = 60) -> bool:
+    now = time.time()
+    bucket = [t for t in _RATE_LIMIT_STORE.get(client_key, []) if now - t < window_seconds]
+    if len(bucket) >= max_requests:
+        _RATE_LIMIT_STORE[client_key] = bucket
+        return False
+    bucket.append(now)
+    _RATE_LIMIT_STORE[client_key] = bucket
+    return True
+
+@app.middleware("http")
+async def security_headers_and_rate_limit(request: Request, call_next):
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_rate_limit(client_ip):
+        return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded. Please try again shortly."})
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # Register modular API routers under /api
 app.include_router(auth_router, prefix="/api")
@@ -60,6 +88,8 @@ app.include_router(officer_router, prefix="/api")
 app.include_router(university_router, prefix="/api")
 app.include_router(audit_router, prefix="/api")
 app.include_router(student_router, prefix="/api")
+app.include_router(intelligence_router, prefix="/api")
+app.include_router(governance_router, prefix="/api")
 
 @app.get("/api/health")
 def api_health():
